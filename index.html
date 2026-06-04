@@ -1161,11 +1161,43 @@ function startTimer(s) {
   timerInterval = setInterval(() => {
     timerSecs--;
     updateTimerDisplay();
-    if (timerSecs <= 0) { clearInterval(timerInterval); if(navigator.vibrate) navigator.vibrate([200,100,200]); showToast('⏰ Temps de repos terminé !'); }
+    if (timerSecs <= 0) {
+        clearInterval(timerInterval);
+        if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
+        showToast('⏰ Temps de repos terminé !');
+        sendTimerNotification();
+      }
   }, 1000);
   updateTimerDisplay();
 }
 function resetTimer() { clearInterval(timerInterval); timerSecs = 0; updateTimerDisplay(); }
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  const perm = await Notification.requestPermission();
+  return perm === 'granted';
+}
+
+function sendTimerNotification() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  try {
+    const notif = new Notification("Seb's Workout ⏰", {
+      body: "Temps de repos terminé ! C'est reparti 💪",
+      icon: './icon-192.png',
+      badge: './icon-192.png',
+      vibrate: [300, 100, 300, 100, 300],
+      tag: 'timer',
+      renotify: true,
+      silent: false,
+    });
+    notif.onclick = () => { window.focus(); notif.close(); };
+    setTimeout(() => notif.close(), 8000);
+  } catch(e) { console.warn('Notification error:', e); }
+}
 function updateTimerDisplay() {
   const m = Math.floor(timerSecs/60).toString().padStart(2,'0');
   const s = (timerSecs%60).toString().padStart(2,'0');
@@ -1191,6 +1223,8 @@ function openNewSession() { openModal('modalNewSession'); }
 
 function startSession(name) {
   session = { name, startTime: Date.now(), exercises: [] };
+  // Request notification permission for Watch relay
+  requestNotificationPermission();
   save(STORAGE_KEYS.session, session);
   closeModal('modalNewSession');
   renderSession();
