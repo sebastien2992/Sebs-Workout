@@ -9,6 +9,7 @@
   "orientation": "portrait-primary",
   "lang": "fr",
   "scope": "./",
+  "id": "./index.html",
   "icons": [
     {
       "src": "./icon-192.png",
