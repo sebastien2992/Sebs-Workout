@@ -600,11 +600,15 @@
       <div style="display:flex;gap:10px;align-items:flex-start">
         <div id="editExPhotoPreview" style="width:90px;height:68px;border-radius:8px;overflow:hidden;background:var(--surface2);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">📷</div>
         <div style="flex:1">
-          <button onclick="document.getElementById('editExPhotoInput').click()" class="btn btn-secondary" style="margin-bottom:6px;font-size:13px;padding:10px">📷 Prendre / Choisir une photo</button>
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <button onclick="document.getElementById('editExPhotoCamera').click()" class="btn btn-secondary" style="flex:1;font-size:13px;padding:10px">📷 Caméra</button>
+            <button onclick="document.getElementById('editExPhotoInput').click()" class="btn btn-secondary" style="flex:1;font-size:13px;padding:10px">🖼️ Galerie</button>
+          </div>
           <button onclick="removeExPhoto()" class="btn" style="background:transparent;border:1px solid var(--danger);color:var(--danger);font-size:13px;padding:8px;width:100%">Supprimer la photo</button>
         </div>
       </div>
-      <input type="file" id="editExPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="handleExPhoto(event)">
+      <input type="file" id="editExPhotoCamera" accept="image/*" capture="environment" style="display:none" onchange="handleExPhoto(event)">
+      <input type="file" id="editExPhotoInput" accept="image/*" style="display:none" onchange="handleExPhoto(event)">
     </div>
     <div class="input-group">
       <label class="input-label">Nom</label>
