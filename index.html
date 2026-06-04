@@ -104,7 +104,7 @@
   .chip { background:var(--surface2); border-radius:4px; font-size:13px; padding:4px 10px; color:var(--muted); font-weight:500; }
   .chip.highlight { color:var(--accent); }
   .muscle-section { margin-bottom:10px; }
-  .muscle-label { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:15px; color:var(--bg); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px; background:var(--accent2); padding:6px 12px; border-radius:6px; display:inline-block; }
+  .muscle-label { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:15px; color:#000; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px; background:var(--accent2); padding:6px 14px; border-radius:8px; display:inline-block; }
   .library-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:border-color 0.2s; }
   .library-item:active { border-color:var(--accent); }
   .library-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:17px; }
@@ -171,7 +171,9 @@
   .prog-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; }
   .prog-card:active { border-color:var(--accent); }
   .prog-ex-item { display:flex; align-items:center; justify-content:space-between; background:var(--surface2); border-radius:8px; padding:8px 12px; margin-bottom:6px; }
-  .lib-tab { background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; padding:8px 16px; cursor:pointer; transition:all 0.2s; }
+  .muscle-pill { background:var(--surface2); border:1px solid var(--border); border-radius:20px; color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:18px; padding:9px 18px; cursor:pointer; transition:all 0.15s; }
+  .muscle-pill-active { background:var(--accent2); color:#fff; border-color:var(--accent2); }
+  .lib-tab { background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:17px; padding:9px 18px; cursor:pointer; transition:all 0.2s; }
   .lib-tab-active { background:var(--accent); color:var(--bg); border-color:var(--accent); }
   .fav-btn { background:transparent; border:none; font-size:20px; cursor:pointer; padding:2px 4px; transition:transform 0.2s; }
   .fav-btn:active { transform:scale(1.3); }
@@ -251,10 +253,22 @@
     </div>
   </div>
   <!-- Sub-tabs -->
-  <div style="display:flex;gap:6px;margin:14px 0 16px">
-    <button id="libTabAll" onclick="setLibTab('all')" class="lib-tab lib-tab-active">Tous</button>
-    <button id="libTabMine" onclick="setLibTab('mine')" class="lib-tab">Mes exercices</button>
-    <button id="libTabFav" onclick="setLibTab('fav')" class="lib-tab">⭐ Favoris</button>
+  <div style="display:flex;gap:6px;margin:14px 0 10px;overflow-x:auto;padding-bottom:4px">
+    <button id="libTabAll" onclick="setLibTab('all')" class="lib-tab lib-tab-active" style="white-space:nowrap">Tous</button>
+    <button id="libTabMine" onclick="setLibTab('mine')" class="lib-tab" style="white-space:nowrap">Mes exercices</button>
+    <button id="libTabFav" onclick="setLibTab('fav')" class="lib-tab" style="white-space:nowrap">⭐ Favoris</button>
+  </div>
+  <!-- Muscle filter pills -->
+  <div id="muscleFilterBar" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+    <button onclick="setMuscleFilter('all')" data-mf="all" class="muscle-pill">Tous</button>
+    <button onclick="setMuscleFilter('Biceps')" data-mf="Biceps" class="muscle-pill muscle-pill-active">Biceps</button>
+    <button onclick="setMuscleFilter('Triceps')" data-mf="Triceps" class="muscle-pill">Triceps</button>
+    <button onclick="setMuscleFilter('Pectoraux')" data-mf="Pectoraux" class="muscle-pill">Pectoraux</button>
+    <button onclick="setMuscleFilter('Dos')" data-mf="Dos" class="muscle-pill">Dos</button>
+    <button onclick="setMuscleFilter('Épaules')" data-mf="Épaules" class="muscle-pill">Épaules</button>
+    <button onclick="setMuscleFilter('Jambes')" data-mf="Jambes" class="muscle-pill">Jambes</button>
+    <button onclick="setMuscleFilter('Abdominaux')" data-mf="Abdominaux" class="muscle-pill">Abdominaux</button>
+    <button onclick="setMuscleFilter('Cardio')" data-mf="Cardio" class="muscle-pill">Cardio</button>
   </div>
   <div id="libraryList"></div>
 </div>
@@ -507,7 +521,7 @@
     <div class="input-group">
       <label class="input-label">Groupe musculaire</label>
       <select class="text-input" id="newExMuscle">
-        <option>Poitrine</option><option>Dos</option><option>Épaules</option>
+        <option>Pectoraux</option><option>Dos</option><option>Épaules</option>
         <option>Biceps</option><option>Triceps</option><option>Jambes</option>
         <option>Abdominaux</option><option>Cardio</option>
       </select>
@@ -599,7 +613,7 @@
     <div class="input-group">
       <label class="input-label">Groupe musculaire</label>
       <select class="text-input" id="editExMuscle">
-        <option>Poitrine</option><option>Dos</option><option>Épaules</option>
+        <option>Pectoraux</option><option>Dos</option><option>Épaules</option>
         <option>Biceps</option><option>Triceps</option><option>Jambes</option>
         <option>Abdominaux</option><option>Cardio</option>
       </select>
@@ -655,19 +669,19 @@ let customPhotos = {};
 
 // YouTube IDs for built-in exercises (search terms used to find them)
 const DEFAULT_EXERCISES = [
-  { id:1,  name:'Développé couché',    muscle:'Poitrine',   type:'Barre',
+  { id:1,  name:'Développé couché',    muscle:'Pectoraux',   type:'Barre',
     desc:'Allongez-vous sur le banc, pieds à plat au sol. Saisissez la barre un peu plus large que la largeur des épaules. Descendez la barre jusqu\'à effleurer la poitrine (mamelons), les coudes à environ 75°. Poussez en expirant jusqu\'à extension complète sans verrouiller les coudes.',
     tips:['Gardez les omoplates rétractées et pincées pendant tout le mouvement','Ne rebondissez pas la barre sur la poitrine','Les pieds restent au sol, le dos légèrement cambré','Controlez la descente sur 2-3 secondes'],
     video:'4Y2ZppbVFes' },
-  { id:2,  name:'Développé incliné haltères', muscle:'Poitrine', type:'Haltères',
+  { id:2,  name:'Développé incliné haltères', muscle:'Pectoraux', type:'Haltères',
     desc:'Sur un banc incliné à 30-45°, saisissez un haltère dans chaque main. Les bras tendus au-dessus de la poitrine haute. Descendez lentement les haltères de chaque côté jusqu\'à hauteur des épaules, puis repoussez en arc de cercle.',
     tips:['L\'inclinaison sollicite davantage le faisceau claviculaire du pectoral','Tournez légèrement les poignets en haut du mouvement (supination)','Évitez de trop écarter les coudes (risque pour les épaules)','Contrôlez la phase excentrique'],
     video:'8iPEnn-ltC8' },
-  { id:3,  name:'Écarté poulie',        muscle:'Poitrine',   type:'Câble',
+  { id:3,  name:'Écarté poulie',        muscle:'Pectoraux',   type:'Câble',
     desc:'Debout entre deux poulies hautes, une poignée dans chaque main. Légèrement penché en avant, amenez les deux mains vers le bas et vers l\'intérieur en décrivant un arc de cercle, comme si vous enlaciez un arbre. Contraction maximale en bas.',
     tips:['Gardez une légère flexion des coudes tout au long du mouvement','Concentrez-vous sur l\'étirement pectoral en haut','Les câbles maintiennent la tension sur toute l\'amplitude','Démarrez avec un poids léger pour maîtriser la technique'],
     video:'taI4XduLpTk' },
-  { id:4,  name:'Pompes',               muscle:'Poitrine',   type:'Poids de corps',
+  { id:4,  name:'Pompes',               muscle:'Pectoraux',   type:'Poids de corps',
     desc:'En position planche, mains légèrement plus larges que les épaules. Corps en ligne droite de la tête aux talons. Descendez jusqu\'à ce que la poitrine frôle le sol, puis poussez pour revenir. Regardez le sol légèrement en avant.',
     tips:['Serrez les fessiers et le gainage abdominal pendant tout le mouvement','Vos coudes forment environ 45° par rapport au corps','Pour progresser : poids sur le dos ou pieds surélevés','Variante : écartement des mains modifie le muscle cible'],
     video:'IODxDxX7oi4' },
@@ -748,43 +762,43 @@ const DEFAULT_EXERCISES = [
     tips:['Commencez par 5 min d\'échauffement à faible vitesse','Augmentez progressivement la vitesse plutôt que l\'inclinaison','Inclinaison 1.0-2.0 simule la résistance de l\'air en extérieur','Terminez par 5 min de récupération active'],
     video:'ySsNpFCkCRU' },
   // ── POITRINE supplémentaires ──────────────────────────────────────────
-  { id:34, name:'Développé haltères plat', muscle:'Poitrine', type:'Haltères',
+  { id:34, name:'Développé haltères plat', muscle:'Pectoraux', type:'Haltères',
     desc:'Allongé sur banc plat, un haltère dans chaque main au niveau de la poitrine. Poussez les haltères vers le haut en arc de cercle jusqu\'à extension. Descendez contrôlé jusqu\'à étirement pectoral.',
     tips:['Plus d\'amplitude que la barre grâce à la liberté de mouvement','Les poignets restent dans l\'axe des avant-bras','Contrôlez la descente sur 2-3 secondes','Excellent pour corriger les déséquilibres gauche/droite'],
     video:'VmB1G1K7v94' },
-  { id:35, name:'Écarté plat haltères', muscle:'Poitrine', type:'Haltères',
+  { id:35, name:'Écarté plat haltères', muscle:'Pectoraux', type:'Haltères',
     desc:'Allongé sur banc plat, haltères bras tendus. Descendez en arc de cercle sur les côtés, légère flexion des coudes fixe. Remontez en contractant les pectoraux.',
     tips:['Gardez la flexion des coudes fixe pendant tout le mouvement','Amplitude maximale pour l\'étirement','Poids plus léger qu\'au développé — isolation pure','Ne croisez pas les bras en haut'],
     video:'eozdVDA78K0' },
-  { id:36, name:'Développé décliné haltères', muscle:'Poitrine', type:'Haltères',
+  { id:36, name:'Développé décliné haltères', muscle:'Pectoraux', type:'Haltères',
     desc:'Sur banc décliné, haltères au niveau du bas de la poitrine. Poussez en arc vers le haut. Cible le faisceau sternal inférieur.',
     tips:['Pieds bien fixés sous les appuis','Amplitude légèrement réduite par rapport au plat','Excellent pour le bas des pectoraux','Plus sécurisé que la barre déclinée'],
     video:'LfyQTbCLeco' },
-  { id:37, name:'Développé câble incliné', muscle:'Poitrine', type:'Câble',
+  { id:37, name:'Développé câble incliné', muscle:'Pectoraux', type:'Câble',
     desc:'Sur banc incliné entre deux poulies basses. Ramenez les poignées vers le haut de la poitrine en arc. Tension constante sur les pectoraux supérieurs.',
     tips:['Les câbles maintiennent la tension tout au long','Idéal en finition après les développés','Angle 30-45° pour le haut des pecs','Ne croisez pas les mains en haut'],
     video:'taI4XduLpTk' },
-  { id:38, name:'Développé câble poitrine', muscle:'Poitrine', type:'Câble',
+  { id:38, name:'Développé câble poitrine', muscle:'Pectoraux', type:'Câble',
     desc:'Debout entre deux poulies à hauteur de poitrine. Poussez les poignées vers l\'avant. Tension constante sur les pectoraux.',
     tips:['Position debout active les stabilisateurs','Les coudes restent légèrement fléchis en fin de mouvement','Pied dominant en arrière pour la stabilité','Idéal pour finir la séance poitrine'],
     video:'MGgSjhGBsJQ' },
-  { id:39, name:'Développé sol haltères', muscle:'Poitrine', type:'Haltères',
+  { id:39, name:'Développé sol haltères', muscle:'Pectoraux', type:'Haltères',
     desc:'Allongé au sol, haltères en main. Le sol limite la descente et protège les épaules. Poussez vers le haut.',
     tips:['Idéal pour les épaules fragiles — amplitude naturellement limitée','Active davantage les triceps','Exercice utile sans banc','Bonne base pour apprendre la technique'],
     video:'uUGDRwge4F8' },
-  { id:40, name:'Écarté décliné haltères', muscle:'Poitrine', type:'Haltères',
+  { id:40, name:'Écarté décliné haltères', muscle:'Pectoraux', type:'Haltères',
     desc:'Sur banc décliné, haltères bras tendus. Descendez en arc jusqu\'à l\'étirement du bas de la poitrine. Remontez en contractant.',
     tips:['Cible le bas des pectoraux','Ne descendez pas trop bas','Poids léger, amplitude maximale','Combinez avec écarté plat pour un développement complet'],
     video:'QENKOiVAkxY' },
-  { id:41, name:'Écarté incliné haltères', muscle:'Poitrine', type:'Haltères',
+  { id:41, name:'Écarté incliné haltères', muscle:'Pectoraux', type:'Haltères',
     desc:'Sur banc incliné 30-45°, haltères bras tendus. Arc de cercle vers le bas puis remontée en contractant le haut de la poitrine.',
     tips:['30° est optimal pour le faisceau claviculaire','Protégez les épaules — ne descendez pas trop bas','Légère supination en haut pour plus de contraction','Après les développés composés'],
     video:'QENKOiVAkxY' },
-  { id:42, name:'Développé sol barre', muscle:'Poitrine', type:'Barre',
+  { id:42, name:'Développé sol barre', muscle:'Pectoraux', type:'Barre',
     desc:'Allongé au sol, barre en main. Descendez jusqu\'à ce que les triceps touchent le sol. Amplitude réduite naturellement par le sol.',
     tips:['Idéal pour les épaules fragiles','Permet de charger plus lourd que les haltères au sol','Coudes à environ 45° du corps','Exercice de force pure'],
     video:'uUGDRwge4F8' },
-  { id:43, name:'Pec deck (butterfly)', muscle:'Poitrine', type:'Machine',
+  { id:43, name:'Pec deck (butterfly)', muscle:'Pectoraux', type:'Machine',
     desc:'Assis à la machine, bras écartés sur les coussins. Ramenez les bras vers le centre en contractant les pectoraux. Mouvement d\'isolation excellent.',
     tips:['Ne laissez pas les bras partir trop en arrière','Contraction maximale au centre — maintenez 1 seconde','Idéal en finition de séance','Réglage : coudes à hauteur des épaules'],
     video:'Z57CtFmRMxA' },
@@ -980,19 +994,19 @@ const DEFAULT_EXERCISES = [
     video:'gwLzBJYoWlA' },
 
   // ── POITRINE (nouveaux) ────────────────────────────────────────────────
-  { id:28, name:'Écarté haltères', muscle:'Poitrine', type:'Haltères',
+  { id:28, name:'Écarté haltères', muscle:'Pectoraux', type:'Haltères',
     desc:'Allongé sur banc plat, un haltère dans chaque main bras tendus au-dessus de la poitrine. Descendez les bras en arc de cercle sur les côtés, légère flexion des coudes, jusqu\'à ressentir un étirement des pectoraux. Remontez en arc en expirant.',
     tips:['Gardez une légère flexion des coudes — ne les tendez pas complètement','L\'amplitude est clé : descendez jusqu\'à ressentir l\'étirement sans forcer','Mouvement d\'isolation : utilisez un poids plus léger qu\'au développé','Idéal en fin de séance pour finir les pectoraux'],
     video:'eozdVDA78K0' },
-  { id:29, name:'Développé décliné', muscle:'Poitrine', type:'Barre',
+  { id:29, name:'Développé décliné', muscle:'Pectoraux', type:'Barre',
     desc:'Sur banc décliné (tête en bas), saisissez la barre légèrement plus large que les épaules. Descendez la barre vers le bas de la poitrine (sternum inférieur), coudes à ~75°. Poussez jusqu\'à extension sans verrouiller. Cible davantage le faisceau sternal inférieur.',
     tips:['Assurez-vous que vos pieds sont bien ancrés sous les appuis','Le banc décliné augmente la charge sur le bas des pectoraux','Ne descendez pas trop bas pour éviter les tensions aux épaules','Demandez toujours un pareur pour ce mouvement'],
     video:'LfyQTbCTeco' },
-  { id:30, name:'Écarté incliné haltères', muscle:'Poitrine', type:'Haltères',
+  { id:30, name:'Écarté incliné haltères', muscle:'Pectoraux', type:'Haltères',
     desc:'Sur banc incliné à 30-45°, un haltère dans chaque main. Bras tendus au-dessus, descendez en arc de cercle jusqu\'à ressentir l\'étirement du haut des pectoraux. Remontez en arc en expirant. Cible spécifiquement le faisceau claviculaire du grand pectoral.',
     tips:['L\'inclinaison cible le haut des pectoraux (faisceau claviculaire)','Légère flexion des coudes pendant tout le mouvement','Ne laissez pas les haltères descendre trop bas — risque articulaire','Combinez avec le développé incliné pour un travail complet du haut pec'],
     video:'QENKOiVAkxY' },
-  { id:31, name:'Développé serré', muscle:'Poitrine', type:'Barre',
+  { id:31, name:'Développé serré', muscle:'Pectoraux', type:'Barre',
     desc:'Comme le développé couché classique, mais avec une prise plus serrée (largeur des épaules ou légèrement plus étroite). Coudes restent proches du corps. Cible prioritairement les triceps et la partie interne des pectoraux. Descendez la barre vers le bas de la poitrine.',
     tips:['Prise trop serrée = inconfort des poignets — restez à largeur des épaules','Les coudes ne s\'écartent pas trop sur les côtés (risque d\'épaules)','Excellent exercice combiné poitrine/triceps en fin de séance','Ne verrouillez pas les coudes en haut'],
     video:'nEF0bv2FW54' },
@@ -1200,7 +1214,7 @@ function renderSession() {
 // ─── CALORIE ESTIMATION ──────────────────────────────────────────────────
 // MET values per muscle group (resistance training intensity approx)
 const MET_BY_MUSCLE = {
-  'Poitrine':    5.0,
+  'Pectoraux':    5.0,
   'Dos':         5.0,
   'Épaules':     4.5,
   'Biceps':      4.0,
@@ -1478,7 +1492,7 @@ function openEditExercise() {
   editingExId = ex.id;
   editPhotoData = null;
   document.getElementById('editExName').value    = ex.name || '';
-  document.getElementById('editExMuscle').value  = ex.muscle || 'Poitrine';
+  document.getElementById('editExMuscle').value  = ex.muscle || 'Pectoraux';
   document.getElementById('editExType').value    = ex.type || 'Barre';
   document.getElementById('editExDesc').value    = ex.desc || '';
   document.getElementById('editExVideo').value   = ex.video || '';
@@ -1580,7 +1594,7 @@ function duplicateExercise() {
   currentDetailId = newId;
   editingExId = newId;
   document.getElementById('editExName').value    = newEx.name;
-  document.getElementById('editExMuscle').value  = newEx.muscle || 'Poitrine';
+  document.getElementById('editExMuscle').value  = newEx.muscle || 'Pectoraux';
   document.getElementById('editExType').value    = newEx.type || 'Barre';
   document.getElementById('editExDesc').value    = newEx.desc || '';
   document.getElementById('editExVideo').value   = newEx.video || '';
@@ -1931,12 +1945,24 @@ function renderExCard(ex, showAdd) {
 }
 
 let currentLibTab = 'all';
+let currentMuscleFilter = 'Biceps';
+
+function setMuscleFilter(muscle) {
+  currentMuscleFilter = muscle;
+  document.querySelectorAll('.muscle-pill').forEach(b => {
+    b.classList.toggle('muscle-pill-active', b.dataset.mf === muscle);
+  });
+  renderLibrary();
+}
 
 function setLibTab(tab) {
   currentLibTab = tab;
   document.getElementById('libTabAll').className  = 'lib-tab' + (tab==='all' ?' lib-tab-active':'');
   document.getElementById('libTabMine').className = 'lib-tab' + (tab==='mine'?' lib-tab-active':'');
   document.getElementById('libTabFav').className  = 'lib-tab' + (tab==='fav' ?' lib-tab-active':'');
+  // Show/hide muscle filter bar (not relevant for Mine/Favs)
+  const bar = document.getElementById('muscleFilterBar');
+  if (bar) bar.style.display = (tab === 'all') ? 'flex' : 'none';
   renderLibrary();
 }
 
@@ -1961,7 +1987,7 @@ function toggleFav(id, event) {
 
 function renderExGrid(exList, showAddBtn) {
   const grouped = groupBy(exList, 'muscle');
-  const icons = { 'Poitrine':'🏋️','Dos':'🔙','Épaules':'💪','Biceps':'💪','Triceps':'💪','Jambes':'🦵','Abdominaux':'🔥','Cardio':'🏃' };
+  const icons = { 'Pectoraux':'🏋️','Dos':'🔙','Épaules':'💪','Biceps':'💪','Triceps':'💪','Jambes':'🦵','Abdominaux':'🔥','Cardio':'🏃' };
   return Object.entries(grouped).map(([muscle, exs]) => `
     <div class="muscle-section">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;margin-top:4px">
@@ -2001,6 +2027,12 @@ function renderExCardWithFav(ex, showAdd) {
 
 function renderLibrary() {
   const showAdd = !!session;
+  // Safety: if exercises empty, try reloading from storage
+  if (!exercises || exercises.length === 0) {
+    const stored = load(STORAGE_KEYS.exercises);
+    if (stored && stored.length > 0) exercises = stored;
+    else exercises = DEFAULT_EXERCISES;
+  }
   let exList;
   let emptyMsg;
   if (currentLibTab === 'mine') {
@@ -2010,11 +2042,15 @@ function renderLibrary() {
     exList = exercises.filter(e => favorites.includes(e.id));
     emptyMsg = '<div class="empty-state"><div class="empty-icon">⭐</div><div>Ajoutez des favoris via ⭐ dans le détail d\'un exercice</div></div>';
   } else {
-    exList = exercises;
-    emptyMsg = '';
+    // Apply muscle filter
+    exList = currentMuscleFilter === 'all'
+      ? exercises
+      : exercises.filter(e => e.muscle === currentMuscleFilter);
+    emptyMsg = '<div class="empty-state"><div class="empty-icon">💪</div><div>Aucun exercice pour ce groupe</div></div>';
   }
+  const hideTitle = (currentLibTab === 'all' && currentMuscleFilter !== 'all') || currentLibTab !== 'all';
   document.getElementById('libraryList').innerHTML = exList.length
-    ? renderExGrid(exList, showAdd)
+    ? renderExGrid(exList, showAdd, hideTitle)
     : emptyMsg;
 }
 
@@ -2057,22 +2093,11 @@ async function autoFillExercise() {
   btn.disabled = true;
   status.textContent = 'Génération en cours...';
 
-  // Smart local fill first (instant, no internet needed)
-  const n = name.toLowerCase();
-  let muscle = 'Dos', type = 'Haltères';
-  if (/curl|bicep|marteau|preacher|concentration|hammer/.test(n)) { muscle = 'Biceps'; }
-  else if (/tricep|dip|extension|skull|barre.front|tate|jm.press/.test(n)) { muscle = 'Triceps'; type = 'Barre'; }
-  else if (/squat|leg.curl|leg.ext|fente|lunge|presse|mollet|calf|hip.thrust|fessier|bulgare|roumain|hack|goblet/.test(n)) { muscle = 'Jambes'; type = 'Barre'; }
-  else if (/bench|pec|poitrine|chest|écarté|fly|pompe|push.up|décliné|incliné/.test(n)) { muscle = 'Poitrine'; type = 'Barre'; }
-  else if (/shoulder|épaule|lateral|arnold|militaire|overhead|upright|shrug|oiseau|face.pull/.test(n)) { muscle = 'Épaules'; }
-  else if (/crunch|planche|plank|abdo|gainage|oblique|croc|relevé/.test(n)) { muscle = 'Abdominaux'; type = 'Poids de corps'; }
-  else if (/rowing|row|tirage|pull|traction|deadlift|soulevé|rack|renegade/.test(n)) { muscle = 'Dos'; }
-  else if (/tapis|cardio|vélo|elliptique/.test(n)) { muscle = 'Cardio'; type = 'Cardio'; }
+  // Always use what the user already selected — NEVER override
+  const selectedMuscle = document.getElementById('newExMuscle').value;
+  const selectedType   = document.getElementById('newExType').value;
 
-  document.getElementById('newExMuscle').value = muscle;
-  document.getElementById('newExType').value = type;
-
-  // Try Claude API for description (works on claude.ai)
+  // Try Claude API — only fills desc + tips, never muscle/type
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -2080,8 +2105,8 @@ async function autoFillExercise() {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 400,
-        system: 'Tu es un coach fitness expert. Réponds UNIQUEMENT en JSON strict sans markdown. Format: {"muscle":"...","type":"...","desc":"...","tips":["...","...","...","..."]}. Champ muscle parmi: Poitrine,Dos,Épaules,Biceps,Triceps,Jambes,Abdominaux,Cardio. Champ type parmi: Barre,Haltères,Machine,Câble,Poids de corps,Cardio. desc: 2-3 phrases techniques en français. tips: 4 conseils courts.',
-        messages: [{ role: 'user', content: 'Exercice de musculation: "' + name + '". Donne le groupe musculaire, le type d\'équipement, une description technique et 4 conseils.' }]
+        system: 'Tu es un coach fitness expert. Réponds UNIQUEMENT en JSON strict sans markdown. Format exact: {"desc":"...","tips":["...","...","...","..."]}. desc: 2-3 phrases techniques en français. tips: exactement 4 conseils courts.',
+        messages: [{ role: 'user', content: 'Exercice: "' + name + '" — groupe musculaire: ' + selectedMuscle + ' — équipement: ' + selectedType + '. Génère une description technique et 4 conseils pratiques.' }]
       })
     });
     const data = await response.json();
@@ -2089,31 +2114,28 @@ async function autoFillExercise() {
     const match = text.match(/\{[\s\S]*\}/);
     if (match) {
       const ex = JSON.parse(match[0]);
-      if (ex.muscle) document.getElementById('newExMuscle').value = ex.muscle;
-      if (ex.type)   document.getElementById('newExType').value   = ex.type;
-      if (ex.desc)   document.getElementById('newExDesc').value   = ex.desc;
-      // Store tips for when saving
+      if (ex.desc) document.getElementById('newExDesc').value = ex.desc;
       window._autoTips = ex.tips || [];
-      status.textContent = '✓ Rempli automatiquement';
+      status.textContent = '✓ Description générée';
       status.style.color = 'var(--accent)';
     } else {
       throw new Error('no json');
     }
   } catch(e) {
-    // Fallback: basic description template
+    // Fallback: template based on selected muscle
     const templates = {
       'Biceps':     `Exercice d'isolation pour les biceps. Fléchissez les avant-bras en gardant les coudes fixes le long du corps. Contrôlez la descente sur 2-3 secondes.`,
       'Triceps':    `Exercice d'isolation pour les triceps. Étendez les bras en gardant les coudes fixes. Contrôlez la phase excentrique.`,
-      'Poitrine':   `Exercice pour les pectoraux. Maintenez les omoplates rétractées et une légère cambrure naturelle. Contrôlez la descente.`,
+      'Pectoraux':  `Exercice pour les pectoraux. Maintenez les omoplates rétractées et une légère cambrure naturelle. Contrôlez la descente.`,
       'Dos':        `Exercice pour les dorsaux. Initiez le mouvement avec les omoplates, pas les bras. Serrez les omoplates en fin de mouvement.`,
       'Épaules':    `Exercice pour les deltoïdes. Gardez le gainage abdominal actif. Contrôlez la phase de descente.`,
       'Jambes':     `Exercice pour les membres inférieurs. Gardez le dos droit et les genoux alignés avec les orteils. Poussez dans les talons.`,
       'Abdominaux': `Exercice pour les abdominaux. Contractez le core pendant tout le mouvement. Respirez de façon contrôlée.`,
       'Cardio':     `Exercice cardio. Démarrez à faible intensité et augmentez progressivement. Maintenez une bonne posture.`,
     };
-    document.getElementById('newExDesc').value = templates[muscle] || `Exercice pour ${muscle.toLowerCase()}. Effectuez le mouvement avec contrôle et amplitude complète.`;
+    document.getElementById('newExDesc').value = templates[selectedMuscle] || `Exercice pour ${selectedMuscle.toLowerCase()}. Effectuez le mouvement avec contrôle et amplitude complète.`;
     window._autoTips = [];
-    status.textContent = '✓ Rempli (mode hors ligne)';
+    status.textContent = '✓ Rempli (hors ligne)';
     status.style.color = 'var(--muted)';
   }
 
@@ -2174,7 +2196,7 @@ function prefillCreateExercise(name) {
   if (/curl|bicep|marteau/.test(n)) { muscle = 'Biceps'; }
   else if (/tricep|dip|extension|crâne|skull/.test(n)) { muscle = 'Triceps'; }
   else if (/squat|leg|fente|lunge|presse|mollet|calf|hip|fessier|bulgare|roumain/.test(n)) { muscle = 'Jambes'; type = 'Barre'; }
-  else if (/bench|pec|poitrine|chest|écarté|fly|pompe|push/.test(n)) { muscle = 'Poitrine'; }
+  else if (/bench|pec|poitrine|chest|écarté|fly|pompe|push/.test(n)) { muscle = 'Pectoraux'; }
   else if (/shoulder|épaule|lateral|arnold|militaire|overhead|upright/.test(n)) { muscle = 'Épaules'; }
   else if (/crunch|planche|plank|abdо|gainage|oblique/.test(n)) { muscle = 'Abdominaux'; type = 'Poids de corps'; }
   else if (/rowing|row|tirage|pull|traction|deadlift|soulevé/.test(n)) { muscle = 'Dos'; }
@@ -2883,7 +2905,7 @@ function setProgAddTab(tab) {
 function renderProgAddList() {
   const exList = progAddTabCurrent === 'fav' ? exercises.filter(e=>favorites.includes(e.id)) : exercises;
   const grouped = groupBy(exList, 'muscle');
-  const icons = {'Poitrine':'🏋️','Dos':'🔙','Épaules':'💪','Biceps':'💪','Triceps':'💪','Jambes':'🦵','Abdominaux':'🔥','Cardio':'🏃'};
+  const icons = {'Pectoraux':'🏋️','Dos':'🔙','Épaules':'💪','Biceps':'💪','Triceps':'💪','Jambes':'🦵','Abdominaux':'🔥','Cardio':'🏃'};
   document.getElementById('progAddExList').innerHTML = Object.entries(grouped).map(([muscle, exs]) => `
     <div style="margin-bottom:10px">
       <div style="font-size:11px;color:var(--accent2);text-transform:uppercase;font-weight:700;letter-spacing:1px;margin-bottom:6px">${icons[muscle]||'💪'} ${muscle}</div>
