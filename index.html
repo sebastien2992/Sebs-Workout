@@ -45,7 +45,9 @@
     top: 0;
     z-index: 100;
     border-bottom: 1px solid var(--border);
+    transition: transform 0.25s ease;
   }
+  header.hidden { transform: translateY(-100%); }
   .header-top { display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; }
   .logo { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:28px; letter-spacing:-1px; color:var(--accent); }
   .logo span { color:var(--text); }
@@ -84,7 +86,7 @@
   .check-btn.done { background:var(--accent); border-color:var(--accent); color:var(--bg); }
   .add-set-btn { width:100%; background:transparent; border:1px dashed var(--border); border-radius:6px; color:var(--muted); font-family:'Barlow',sans-serif; font-size:13px; padding:8px; cursor:pointer; margin-top:4px; transition:all 0.2s; }
   .add-set-btn:active { border-color:var(--accent); color:var(--accent); }
-  .timer-bar { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
+  .timer-bar { background:var(--surface); border:1px solid var(--border); border-radius:0 0 var(--radius) var(--radius); padding:10px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 4px 16px rgba(0,0,0,0.6); }
   .timer-display { font-family:'Barlow Condensed',sans-serif; font-size:36px; font-weight:900; color:var(--accent); letter-spacing:-1px; }
   .timer-label { font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:500; }
   .timer-controls { display:flex; gap:8px; }
@@ -151,9 +153,9 @@
   .video-section-title { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:16px; color:var(--accent); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px; }
   .info-btn { background:transparent; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-size:16px; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; margin-left:8px; }
   .info-btn:active { border-color:var(--accent); color:var(--accent); }
-  .ex-stopwatch { display:flex; align-items:center; gap:6px; font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:700; color:var(--muted); }
+  .ex-stopwatch { display:flex; align-items:center; gap:6px; font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:700; color:var(--muted); }
   .ex-stopwatch.running { color:var(--accent); }
-  .ex-done-btn { background:var(--surface2); border:2px solid var(--border); border-radius:8px; color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; padding:6px 12px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+  .ex-done-btn { background:var(--surface2); border:2px solid var(--border); border-radius:8px; color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:16px; padding:10px 16px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
   .ex-done-btn.finished { background:var(--success,#44ff88); border-color:var(--success,#44ff88); color:#000; }
   .session-type-btn { background:var(--surface2); border:2px solid var(--border); border-radius:var(--radius); padding:20px 12px; cursor:pointer; text-align:center; transition:all 0.2s; }
   .session-type-btn:active { border-color:var(--accent); background:rgba(232,255,71,0.07); transform:scale(0.97); }
@@ -204,8 +206,7 @@
 
 <!-- TODAY -->
 <div id="page-today" class="page active">
-  <div class="section-title">Séance</div>
-  <div class="section-sub" id="workoutStatus">Aucune séance en cours</div>
+
   <div id="no-session">
     <button class="btn btn-primary" onclick="openNewSession()">+ Démarrer une séance</button>
     <div class="empty-state"><div class="empty-icon">🏋️</div><div>Appuyez sur démarrer pour commencer</div></div>
@@ -220,16 +221,18 @@
         <button class="timer-btn" id="tbtn60" onclick="selectTimer(60)">1′</button>
         <button class="timer-btn" id="tbtn90" onclick="selectTimer(90)">1.5′</button>
         <button class="timer-btn" id="tbtn120" onclick="selectTimer(120)">2′</button>
-        <button class="timer-btn" id="tbtn0" onclick="selectTimer(0)">⏹</button>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <button class="timer-btn" id="tbtn0" onclick="selectTimer(0)">⏹</button>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--accent);line-height:1;letter-spacing:-0.5px" id="sessionElapsedSticky">0:00</div>
+        </div>
       </div>
     </div>
     <div class="progress-wrap"><div class="progress-fill" id="sessionProgress" style="width:0%"></div></div>
     <div class="card" style="display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px;margin-bottom:16px">
       <div>
         <div class="session-name" id="sessionNameDisplay">—</div>
-        <div class="session-meta" style="display:flex;gap:10px;align-items:center">
+        <div class="session-meta">
           <span id="sessionTimeDisplay">Démarré à —</span>
-          <span style="color:var(--accent);font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:15px" id="sessionElapsed">0:00</span>
         </div>
       </div>
       <div class="session-badge">En cours</div>
@@ -552,15 +555,16 @@
 <!-- MODAL: Détail exercice -->
 <div class="modal-overlay" id="modalExerciseDetail">
   <div class="modal">
+    <!-- Add button always visible at top when session active -->
+    <div id="detailAddBtnTop" style="display:none;margin-bottom:12px">
+      <button class="btn btn-primary" onclick="addCurrentExToSession()" style="font-size:16px">+ Ajouter à la séance</button>
+    </div>
     <div id="exerciseDetailContent"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
       <button class="btn btn-secondary" id="detailEditBtn" onclick="openEditExercise()">✏️ Modifier</button>
       <button class="btn btn-secondary" onclick="duplicateExercise()">⧉ Dupliquer</button>
       <button class="btn btn-secondary" onclick="closeModal('modalExerciseDetail')">Fermer</button>
       <button class="btn" id="detailFavBtn" onclick="toggleFav(currentDetailId,null);updateDetailFavBtn()" style="background:var(--surface2);border:1px solid var(--border);font-size:18px">☆</button>
-    </div>
-    <div style="margin-top:8px">
-      <button class="btn btn-primary" id="detailAddBtn" style="display:none" onclick="addCurrentExToSession()">+ Ajouter à la séance</button>
     </div>
   </div>
 </div>
@@ -660,6 +664,23 @@
     <div id="searchExResults"></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('modalSearchExercise')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: Calories cardio -->
+<div class="modal-overlay" id="modalCardioCalories">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:36px;margin-bottom:8px">🔥</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;margin-bottom:6px">Calories brûlées</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:20px">Entrez les calories affichées sur la machine (optionnel)</div>
+    <input class="text-input" id="cardioCalInput" type="number" inputmode="numeric"
+      placeholder="ex: 350"
+      style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:28px;text-align:center;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btn-secondary" onclick="confirmCardioCalories(0)">Passer</button>
+      <button class="btn btn-primary" onclick="confirmCardioCalories()">Confirmer</button>
     </div>
   </div>
 </div>
@@ -1098,10 +1119,11 @@ function startSessionTicker() {
     const h = Math.floor(elapsed / 3600);
     const m = Math.floor((elapsed % 3600) / 60);
     const s = elapsed % 60;
+    const fmt = h > 0 ? h + 'h' + String(m).padStart(2,'0') + 'min' : m + ':' + String(s).padStart(2,'0');
     const el = document.getElementById('sessionElapsed');
-    if (el) el.textContent = h > 0
-      ? h + 'h' + String(m).padStart(2,'0') + 'min'
-      : m + ':' + String(s).padStart(2,'0');
+    if (el) el.textContent = fmt;
+    const el2 = document.getElementById('sessionElapsedSticky');
+    if (el2) el2.textContent = fmt;
   }, 1000);
 }
 
@@ -1133,8 +1155,15 @@ function markExerciseDone(ei) {
   ex.finished = !ex.finished;
   if (ex.finished) {
     ex.elapsedSecs = Math.floor((Date.now() - ex.startTime) / 1000);
+    // Ask calories only for cardio exercises
+    if (ex.type === 'Cardio') {
+      window._pendingCalorieExIdx = ei;
+      const input = document.getElementById('cardioCalInput');
+      if (input) input.value = ex.calories || '';
+      openModal('modalCardioCalories');
+      return; // wait for modal confirmation before saving
+    }
   } else {
-    // Restart
     ex.startTime = Date.now() - ex.elapsedSecs * 1000;
   }
   save(STORAGE_KEYS.session, session);
@@ -1171,6 +1200,25 @@ function startTimer(s) {
   updateTimerDisplay();
 }
 function resetTimer() { clearInterval(timerInterval); timerSecs = 0; updateTimerDisplay(); }
+
+function confirmCardioCalories(forcedVal) {
+  const ei = window._pendingCalorieExIdx;
+  if (ei === undefined || !session || !session.exercises[ei]) {
+    closeModal('modalCardioCalories');
+    return;
+  }
+  const ex = session.exercises[ei];
+  if (forcedVal === 0) {
+    // Skipped
+  } else {
+    const val = document.getElementById('cardioCalInput').value;
+    if (val && val.trim() !== '') ex.calories = parseFloat(val) || 0;
+  }
+  save(STORAGE_KEYS.session, session);
+  closeModal('modalCardioCalories');
+  renderExercises();
+  window._pendingCalorieExIdx = undefined;
+}
 
 // ─── NOTIFICATIONS ────────────────────────────────────────────────────────
 async function requestNotificationPermission() {
@@ -1234,15 +1282,17 @@ function renderSession() {
   if (!session) {
     document.getElementById('no-session').style.display='block';
     document.getElementById('active-session').style.display='none';
-    document.getElementById('workoutStatus').textContent='Aucune séance en cours';
+    document.querySelector('.tabs').classList.remove('session-active');
+    const ws = document.getElementById('workoutStatus'); if(ws) ws.textContent='Aucune séance en cours';
     return;
   }
   document.getElementById('no-session').style.display='none';
   document.getElementById('active-session').style.display='block';
+  document.querySelector('.tabs').classList.add('session-active');
   document.getElementById('sessionNameDisplay').textContent = session.name;
   const started = new Date(session.startTime);
   document.getElementById('sessionTimeDisplay').textContent = `Démarré à ${started.getHours()}h${started.getMinutes().toString().padStart(2,'0')}`;
-  document.getElementById('workoutStatus').textContent = session.exercises.length + ' exercice(s)';
+  const ws2 = document.getElementById('workoutStatus'); if(ws2) ws2.textContent = session.exercises.length + ' exercice(s)';
   renderExercises();
   updateProgress();
   startSessionTicker();
@@ -1380,7 +1430,7 @@ function renderExercises() {
           <button class="ex-done-btn ${ex.finished?'finished':''}" onclick="markExerciseDone(${ei})">
             ${ex.finished?'✓ Terminé':'Marquer terminé'}
           </button>
-          <button onclick="removeExerciseFromSession(${ei})" style="background:transparent;border:1px solid var(--danger);border-radius:8px;color:var(--danger);width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
+          <button onclick="removeExerciseFromSession(${ei})" style="background:transparent;border:2px solid var(--danger);border-radius:8px;color:var(--danger);width:44px;height:44px;cursor:pointer;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
         </div>
       </div>
     </div>`;
@@ -1466,9 +1516,8 @@ function openExerciseDetail(id, fromSession=false) {
   if (!ex) return;
   currentDetailId = id;
   detailFromSession = fromSession;
-  const addBtn = document.getElementById('detailAddBtn');
-  // Show "Ajouter" only if: not opened from session view AND a session is active
-  addBtn.style.display = (!fromSession && session) ? 'block' : 'none';
+  const addBtnTop = document.getElementById('detailAddBtnTop');
+  if (addBtnTop) addBtnTop.style.display = (!fromSession && session) ? 'block' : 'none';
 
   const tipsHtml = ex.tips && ex.tips.length
     ? `<div class="detail-tips">
@@ -1648,15 +1697,27 @@ function duplicateExercise() {
 }
 
 function addCurrentExToSession() {
-  if (!currentDetailId || !session) return;
+  if (!currentDetailId || !session) {
+    showToast('Démarrez d\'abord une séance');
+    return;
+  }
   const ex = exercises.find(e=>e.id===currentDetailId);
   if (!ex) return;
-  session.exercises.push({ ...ex, expanded:true, startTime:Date.now(), elapsedSecs:0, finished:false, sets:[{reps:'',kg:'',rir:'',done:false}] });
+  const initSet = ex.type === 'Cardio'
+    ? {speed:'',incline:'',minutes:'',done:false}
+    : {reps:'',kg:'',done:false};
+  session.exercises.push({ ...ex, expanded:true, startTime:Date.now(), elapsedSecs:0, finished:false, sets:[initSet] });
   save(STORAGE_KEYS.session, session);
   closeModal('modalExerciseDetail');
   closeModal('modalAddExercise');
+  // Navigate to Séance tab manually
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-today').classList.add('active');
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t=>{ if(t.textContent.trim()==='Séance') t.classList.add('active'); });
   renderSession();
-  showToast(`${ex.name} ajouté`);
+  showToast(ex.name + ' ajouté ✓');
 }
 
 // ─── ADD EXERCISE TO SESSION ─────────────────────
@@ -1742,20 +1803,46 @@ function promptFinishSession() {
   if (strengthExs.length) {
   const strengthSecs = strengthExs.reduce((a,e)=>a+(e.elapsedSecs||0),0);
   const strengthMins = Math.round(strengthSecs/60);
+    const strengthRows = strengthExs.map(e => {
+      const mins = Math.round((e.elapsedSecs||0)/60);
+      const cal = Math.round(calcExCalories(e));
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span style="font-size:14px;flex:1">${e.name}</span>
+        <span style="font-size:13px;color:var(--muted);margin-right:12px">${mins > 0 ? mins+'min' : ''}</span>
+        <span style="font-size:13px;color:var(--accent);white-space:nowrap">🔥 ${cal} kcal</span>
+      </div>`;
+    }).join('');
     html += `<div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:10px">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">💪 Musculation</div>
-      ${row('Exercices', strengthExs.length)}
-      ${row('Temps', fmtMins(strengthMins))}
-      ${row('Calories estimées', '🔥 '+strengthCal+' kcal')}
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">💪 Musculation</div>
+      ${strengthRows}
+      <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1)">
+        <span style="font-size:13px;color:var(--muted)">Total</span>
+        <span style="font-size:13px;color:var(--muted)">${fmtMins(strengthMins)}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--accent)">🔥 ${strengthCal} kcal</span>
+      </div>
     </div>`;
   }
 
   // Cardio block
   if (cardioExs.length) {
+    const cardioRows = cardioExs.map(e => {
+      const mins = Math.round(e.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.minutes)||0),0));
+      const cal = e.calories ? Math.round(e.calories) : Math.round(calcExCalories(e));
+      const calLabel = e.calories ? '' : ' est.';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span style="font-size:14px;flex:1">${e.name}</span>
+        <span style="font-size:13px;color:var(--muted);margin-right:12px">${mins > 0 ? mins+' min' : ''}</span>
+        <span style="font-size:13px;color:var(--accent2);white-space:nowrap">🔥 ${cal} kcal${calLabel}</span>
+      </div>`;
+    }).join('');
     html += `<div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:10px">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--accent2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">🏃 Cardio</div>
-      ${row('Temps', cardioMins+' min')}
-      ${row('Calories'+(cardioExs.some(e=>e.calories)?'':' est.'), '🔥 '+cardioCal+' kcal')}
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--accent2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">🏃 Cardio</div>
+      ${cardioRows}
+      <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1)">
+        <span style="font-size:13px;color:var(--muted)">Total</span>
+        <span style="font-size:13px;color:var(--muted)">${cardioMins} min</span>
+        <span style="font-size:13px;font-weight:700;color:var(--accent2)">🔥 ${cardioCal} kcal</span>
+      </div>
     </div>`;
   }
 
@@ -3159,6 +3246,21 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 // ─── INIT ────────────────────────────────────────
 document.getElementById('todayDate').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+
+// Hide header on scroll down, show on scroll up
+(function() {
+  let lastY = 0;
+  const header = document.querySelector('header');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (y > lastY && y > 60) {
+      header.classList.add('hidden');
+    } else {
+      header.classList.remove('hidden');
+    }
+    lastY = y;
+  }, { passive: true });
+})();
 
 async function initApp() {
   await loadAllFromDB();
