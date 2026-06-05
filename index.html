@@ -1497,13 +1497,19 @@ function updateExCalories(ei, val) {
 function toggleSet(ei, si) {
   const set = session.exercises[ei].sets[si];
   set.done = !set.done;
+  // Start exercise timer on first action if not yet started
+  const ex = session.exercises[ei];
+  if (!ex.startTime) {
+    ex.startTime = Date.now();
+    ex.elapsedSecs = 0;
+    startStopwatches();
+  }
   save(STORAGE_KEYS.session, session);
   const row = document.getElementById(`setRow${ei}_${si}`);
   const btn = row.querySelector('.check-btn');
   if (set.done) { row.classList.add('done'); btn.classList.add('done'); if(selectedRestTime>0) startTimer(selectedRestTime); }
   else { row.classList.remove('done'); btn.classList.remove('done'); }
   // Update the done/total counter for this exercise
-  const ex = session.exercises[ei];
   const doneNow = ex.sets.filter(s=>s.done).length;
   const counterEl = document.getElementById('exCount'+ei);
   if (counterEl) counterEl.textContent = doneNow + '/' + ex.sets.length;
@@ -2484,11 +2490,14 @@ function redoSession() {
   if (currentHistoryIndex === null) return;
   const s = history[currentHistoryIndex];
   if (session) { showToast('Une séance est déjà en cours'); return; }
-  // Clone exercises with empty sets
+  // Clone exercises — reset timers, finished state, no startTime yet
   const newExercises = s.exercises.map(ex => ({
     ...ex,
     expanded: true,
-    calories: ex.type === 'Cardio' ? (ex.calories || 0) : undefined,
+    finished: false,
+    elapsedSecs: 0,
+    startTime: null,  // will start on first action
+    calories: ex.type === 'Cardio' ? undefined : undefined,
     sets: ex.sets.filter(x=>x.done).map(x => {
       if (ex.type === 'Cardio') {
         return { speed: x.speed||'', incline: x.incline||'', minutes: x.minutes||'', done: false };
