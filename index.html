@@ -188,8 +188,9 @@
 </style>
 </head>
 <body style="background:#0a0a0a;margin:0">
+<style>#appWrapper{opacity:0;transition:opacity 0.6s ease}#appWrapper.visible{opacity:1}</style>
 
-<header>
+<div id="appWrapper"><header>
   <div class="header-top">
     <div class="logo">SEB'S<span> WORKOUT</span></div>
     <div class="date-badge" id="todayDate"></div>
@@ -3358,6 +3359,7 @@ self.addEventListener('fetch', e => {
 
 
 
+</div>
 <!-- SPLASH SCREEN -->
 <div id="splashScreen" style="
   position:fixed; inset:0; background:#0a0a0a; z-index:9999;
@@ -3384,12 +3386,13 @@ self.addEventListener('fetch', e => {
 <script>
 (function() {
   function hideSplash() {
+    var app = document.getElementById('appWrapper');
+    if (app) app.classList.add('visible');
     var splash = document.getElementById('splashScreen');
     if (!splash) return;
     splash.style.opacity = '0';
     setTimeout(function() { splash.style.display = 'none'; }, 800);
   }
-  // Show splash for 3 seconds minimum
   setTimeout(hideSplash, 3000);
   window.onAppReady = function() {};
 })();
