@@ -313,7 +313,7 @@
       <!-- Taille sauvegardée -->
       <div id="heightSavedRow" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-top:auto;display:inline-flex;flex-direction:column;max-width:180px">
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:1px;margin-bottom:4px">Ma taille</div>
-        <div style="display:flex;align-items:center;gap:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px">
           <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--text);line-height:1;white-space:nowrap" id="heightDisplay">—</div>
           <button onclick="editHeight()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;padding:5px 12px;cursor:pointer;font-weight:600;white-space:nowrap">Modifier</button>
         </div>
@@ -326,7 +326,7 @@
 
     <div style="display:flex;flex-direction:column;gap:6px;padding-top:2px">
       <button onclick="exportData()" style="background:var(--accent);border:none;border-radius:8px;color:var(--bg);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">⬇ Exporter</button>
-      <button onclick="document.getElementById('importFile').click()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">⬆ Importer</button>
+      <button onclick="document.getElementById('importFile').click()" style="background:var(--surface);border:1px solid #ffffff;border-radius:8px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">⬆ Importer</button>
       <button onclick="openResetModal()" style="background:transparent;border:1px solid var(--danger);border-radius:8px;color:var(--danger);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">🗑 Reset</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
     </div>
@@ -337,15 +337,15 @@
   <!-- Taille sauvegardée -- REMOVED, now inline above -->
 
   <!-- IMC -->
-  <div class="card" id="imcCard" style="display:none;margin-bottom:16px">
+  <div class="card" id="imcCard" style="display:none;margin-bottom:16px;border:2px solid var(--accent)">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div>
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600">IMC</div>
+        <div style="font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">IMC</div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;line-height:1" id="imcValue">—</div>
         <div style="font-size:13px;margin-top:4px" id="imcLabel">—</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Dernier poids</div>
+        <div style="font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Dernier poids</div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:var(--accent)" id="lastWeightVal">—</div>
         <div style="font-size:11px;color:var(--muted)" id="lastWeightDate">—</div>
       </div>
@@ -369,7 +369,7 @@
   </div>
 
   <!-- Graphique poids -->
-  <div class="card" id="weightChartCard" style="display:none;margin-bottom:16px;padding:14px 10px">
+  <div class="card" id="weightChartCard" style="display:none;margin-bottom:16px;padding:14px 10px;border:2px solid var(--accent)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 4px">
       <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px">Évolution du poids</div>
       <div style="display:flex;gap:4px">
@@ -383,7 +383,7 @@
   </div>
 
   <!-- Saisie poids -->
-  <div class="card" style="margin-bottom:16px">
+  <div class="card" style="margin-bottom:16px;border:2px solid var(--accent)">
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:12px">Enregistrer mon poids</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
       <div>
@@ -2841,22 +2841,25 @@ function drawWeightChart() {
     .filter(d => d.date >= cutoff)
     .reverse(); // oldest first
 
+  // Get real width from parent container
+  const parent = canvas.parentElement;
+  const W = (parent ? parent.clientWidth - 28 : 340) || 340;
+  const H = 220;
+
   if (data.length < 2) {
-    const W2 = canvas.offsetWidth || 340;
-    canvas.width = W2; canvas.height = 220;
-    ctx.clearRect(0,0,W2,220);
-    ctx.fillStyle = '#555'; ctx.font = '14px Barlow,sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('Pas assez de données pour cette période', W2/2, 110);
+    canvas.width = W; canvas.height = H;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#555'; ctx.font = '14px Arial, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Pas assez de données pour cette période', W/2, 110);
     return;
   }
 
-  const W = canvas.offsetWidth || 340;
-  const H = 220;
-  canvas.width = W * window.devicePixelRatio;
-  canvas.height = H * window.devicePixelRatio;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
   canvas.style.width = W + 'px';
   canvas.style.height = H + 'px';
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, W, H);
 
   const weights = data.map(d => d.weight);
@@ -2882,14 +2885,12 @@ function drawWeightChart() {
   for (let i = 0; i <= gridCount; i++) {
     const v = minW + (i / gridCount) * (maxW - minW);
     const y = toY(v);
-    // Grid line
     ctx.strokeStyle = i === 0 ? '#333' : '#222';
     ctx.lineWidth = 1;
     ctx.setLineDash([]);
     ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-    // Y label
     ctx.fillStyle = '#666';
-    ctx.font = `${11 * window.devicePixelRatio < 2 ? 11 : 11}px -apple-system, Arial, sans-serif`;
+    ctx.font = '11px Arial, sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText(v.toFixed(1), padL - 6, y + 4);
   }
@@ -2915,7 +2916,7 @@ function drawWeightChart() {
   ctx.fillStyle = grad;
   ctx.fill();
 
-  // Smooth line (using quadratic curves)
+  // Line — simple lineTo for perfect connectivity
   ctx.beginPath();
   ctx.strokeStyle = '#44c878';
   ctx.lineWidth = 2;
@@ -2924,14 +2925,11 @@ function drawWeightChart() {
   ctx.setLineDash([]);
   ctx.moveTo(toX(0), toY(data[0].weight));
   for (let i = 1; i < data.length; i++) {
-    const xMid = (toX(i-1) + toX(i)) / 2;
-    const yMid = (toY(data[i-1].weight) + toY(data[i].weight)) / 2;
-    ctx.quadraticCurveTo(toX(i-1), toY(data[i-1].weight), xMid, yMid);
+    ctx.lineTo(toX(i), toY(data[i].weight));
   }
-  ctx.lineTo(toX(data.length-1), toY(data[data.length-1].weight));
   ctx.stroke();
 
-  // Dots — only if not too many points
+  // Dots
   if (data.length <= 60) {
     data.forEach((d, i) => {
       ctx.beginPath();
@@ -2941,13 +2939,12 @@ function drawWeightChart() {
     });
   }
 
-  // X-axis date labels — evenly spaced, no overlap
+  // X-axis date labels
   ctx.fillStyle = '#666';
-  ctx.font = '11px -apple-system, Arial, sans-serif';
+  ctx.font = '11px Arial, sans-serif';
   ctx.textAlign = 'center';
-  const minSpacing = 52; // min px between labels
+  const minSpacing = 52;
   const maxLabels = Math.max(2, Math.floor(chartW / minSpacing));
-  // Pick evenly distributed indices
   const labelIndices = [];
   if (data.length <= maxLabels) {
     for (let i = 0; i < data.length; i++) labelIndices.push(i);
@@ -2956,7 +2953,6 @@ function drawWeightChart() {
       labelIndices.push(Math.round(i * (data.length - 1) / (maxLabels - 1)));
     }
   }
-  // Deduplicate and draw
   const drawn = new Set();
   labelIndices.forEach(i => {
     if (drawn.has(i)) return;
@@ -2964,12 +2960,9 @@ function drawWeightChart() {
     const d2 = new Date(data[i].date);
     const month = (d2.getMonth() + 1).toString().padStart(2, '0');
     const day = d2.getDate().toString().padStart(2, '0');
-    let x = toX(i);
-    // Clamp to chart edges
     ctx.textAlign = i === 0 ? 'left' : i === data.length - 1 ? 'right' : 'center';
-    ctx.fillText(month + '-' + day, x, H - padB + 18);
+    ctx.fillText(month + '-' + day, toX(i), H - padB + 18);
   });
-
 }
 
 // ─── UTILS ───────────────────────────────────────
@@ -3377,6 +3370,21 @@ self.addEventListener('fetch', e => {
 
 
 
+
+
+<!-- BLACK INTRO SCREEN -->
+<div id="blackIntro" style="
+  position:fixed; inset:0; background:#0a0a0a; z-index:9999;
+  transition:opacity 0.6s ease-out;
+"></div>
+<script>
+setTimeout(function() {
+  var el = document.getElementById('blackIntro');
+  if (!el) return;
+  el.style.opacity = '0';
+  setTimeout(function() { el.style.display = 'none'; }, 600);
+}, 4000);
+</script>
 
 </body>
 </html>
