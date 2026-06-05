@@ -106,7 +106,7 @@
   .chip { background:var(--surface2); border-radius:4px; font-size:13px; padding:4px 10px; color:var(--muted); font-weight:500; }
   .chip.highlight { color:var(--accent); }
   .muscle-section { margin-bottom:10px; }
-  .muscle-label { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:15px; color:#000; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px; background:var(--accent2); padding:6px 14px; border-radius:8px; display:inline-block; }
+  .muscle-label { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:16px; color:#fff; text-transform:uppercase; letter-spacing:2px; display:block; }
   .library-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:border-color 0.2s; }
   .library-item:active { border-color:var(--accent); }
   .library-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:17px; }
@@ -170,8 +170,8 @@
   .ex-card-svg svg { width:100%; height:100%; }
   .prog-type-btn { background:var(--surface2); border:1px solid var(--border); border-radius:20px; color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; padding:6px 14px; cursor:pointer; transition:all 0.2s; }
   .active-prog { background:var(--accent); color:var(--bg); border-color:var(--accent); }
-  .prog-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; }
-  .prog-card:active { border-color:var(--accent); }
+  .prog-card { background:var(--surface); border:2px solid var(--accent); border-radius:var(--radius); padding:16px; margin-bottom:16px; }
+  .prog-card:active { border-color:var(--accent2); }
   .prog-ex-item { display:flex; align-items:center; justify-content:space-between; background:var(--surface2); border-radius:8px; padding:8px 12px; margin-bottom:6px; }
   .muscle-pill { background:var(--surface2); border:1px solid var(--border); border-radius:20px; color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:18px; padding:9px 18px; cursor:pointer; transition:all 0.15s; }
   .muscle-pill-active { background:var(--accent2); color:#fff; border-color:var(--accent2); }
@@ -181,7 +181,7 @@
   .fav-btn:active { transform:scale(1.3); }
   .range-btn { background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; padding:4px 10px; cursor:pointer; transition:all 0.2s; }
   .range-btn:active, .active-range { background:var(--accent); color:var(--bg); border-color:var(--accent); }
-  .ex-card-img { background:var(--surface2); height:100px; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .ex-card-img { background:var(--surface2); height:130px; overflow:hidden; display:flex; align-items:center; justify-content:center; }
   .ex-card-img svg { width:100%; height:100%; display:block; }
   .ex-card-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; padding:6px 8px 2px; line-height:1.2; }
   .ex-card-meta { font-size:10px; color:var(--muted); padding:0 8px 8px; }
@@ -251,15 +251,19 @@
 
 <!-- LIBRARY -->
 <div id="page-library" class="page">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
     <div>
       <div class="section-title" style="margin-bottom:0">Exercices</div>
       <div class="section-sub" style="margin-bottom:0">Appuyez pour voir le détail</div>
     </div>
-    <div style="display:flex;gap:6px;margin-top:4px">
-      <button class="btn btn-secondary" onclick="openSearchExercise()" style="padding:10px 12px;font-size:14px;width:auto">🔍</button>
-      <button class="btn btn-primary" onclick="openCreateExercise()" style="padding:10px 14px;font-size:14px;width:auto">+ Créer</button>
-    </div>
+    <button class="btn btn-primary" onclick="openCreateExercise()" style="padding:10px 14px;font-size:14px;width:auto;margin-top:4px">+ Créer</button>
+  </div>
+  <!-- Search bar -->
+  <div style="position:relative;margin-bottom:12px">
+    <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted)">🔍</span>
+    <input class="text-input" id="libSearchInput" placeholder="Filtrer les exercices..."
+      oninput="onLibSearch(this.value)"
+      style="padding-left:38px;font-size:15px">
   </div>
   <!-- Sub-tabs -->
   <div style="display:flex;gap:6px;margin:14px 0 10px;overflow-x:auto;padding-bottom:4px">
@@ -293,12 +297,33 @@
 <!-- PROFIL -->
 <div id="page-profil" class="page">
 
-  <!-- Header -->
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-    <div>
-      <div class="section-title" style="margin-bottom:0">Profil</div>
-      <div class="section-sub" style="margin-bottom:0">Poids corporel &amp; IMC</div>
+  <!-- Header with buttons and height inline -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+    <div style="flex:1;margin-right:10px;display:flex;flex-direction:column;justify-content:flex-end;align-self:stretch">
+
+      <!-- Taille setup (première fois) -->
+      <div id="heightSetupCard" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:auto">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+          <div><label class="input-label">Pieds</label><input class="text-input" id="heightFt" type="number" inputmode="numeric" placeholder="5" min="1" max="9"></div>
+          <div><label class="input-label">Pouces</label><input class="text-input" id="heightIn" type="number" inputmode="numeric" placeholder="10" min="0" max="11"></div>
+        </div>
+        <button class="btn btn-primary" onclick="saveHeight()" style="font-size:13px;padding:8px">Sauvegarder</button>
+      </div>
+
+      <!-- Taille sauvegardée -->
+      <div id="heightSavedRow" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-top:auto;display:inline-flex;flex-direction:column;max-width:180px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:1px;margin-bottom:4px">Ma taille</div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--text);line-height:1;white-space:nowrap" id="heightDisplay">—</div>
+          <button onclick="editHeight()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;padding:5px 12px;cursor:pointer;font-weight:600;white-space:nowrap">Modifier</button>
+        </div>
+      </div>
+
+      <!-- Titre en haut -->
+      <div class="section-title" style="margin-bottom:2px;order:-1">Profil</div>
+      <div class="section-sub" style="margin-bottom:8px;order:-1">Poids corporel &amp; IMC</div>
     </div>
+
     <div style="display:flex;flex-direction:column;gap:6px;padding-top:2px">
       <button onclick="exportData()" style="background:var(--accent);border:none;border-radius:8px;color:var(--bg);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">⬇ Exporter</button>
       <button onclick="document.getElementById('importFile').click()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">⬆ Importer</button>
@@ -306,28 +331,10 @@
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
     </div>
   </div>
-  <div style="margin-bottom:16px"></div>
+  <div style="margin-bottom:0"></div>
 
-  <!-- Taille (une seule fois) -->
-  <div id="heightSetupCard" class="card" style="margin-bottom:12px;display:none">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:10px">Ma taille</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-      <div><label class="input-label">Pieds</label><input class="text-input" id="heightFt" type="number" inputmode="numeric" placeholder="5" min="1" max="9"></div>
-      <div><label class="input-label">Pouces</label><input class="text-input" id="heightIn" type="number" inputmode="numeric" placeholder="10" min="0" max="11"></div>
-    </div>
-    <button class="btn btn-primary" onclick="saveHeight()">Sauvegarder la taille</button>
-  </div>
-
-  <!-- Taille sauvegardée -->
-  <div id="heightSavedRow" style="display:none;margin-bottom:12px">
-    <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px">
-      <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;letter-spacing:0.5px">Ma taille</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px" id="heightDisplay">—</div>
-      </div>
-      <button onclick="editHeight()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:12px;padding:6px 10px;cursor:pointer;font-weight:600">Modifier</button>
-    </div>
-  </div>
+  <!-- Taille (une seule fois) -- REMOVED, now inline above -->
+  <!-- Taille sauvegardée -- REMOVED, now inline above -->
 
   <!-- IMC -->
   <div class="card" id="imcCard" style="display:none;margin-bottom:16px">
@@ -656,24 +663,6 @@
 </div>
 
 
-<!-- MODAL: Recherche exercice internet -->
-<div class="modal-overlay" id="modalSearchExercise">
-  <div class="modal">
-    <div class="modal-title">🔍 Rechercher un exercice</div>
-    <div class="input-group">
-      <label class="input-label">Nom de l'exercice</label>
-      <div style="display:flex;gap:8px">
-        <input class="text-input" id="searchExInput" placeholder="ex: leg curl, squat bulgare..." style="flex:1" onkeydown="if(event.key==='Enter')searchExerciseOnline()">
-        <button class="btn btn-primary" onclick="searchExerciseOnline()" style="width:auto;padding:12px 16px;flex-shrink:0">Go</button>
-      </div>
-    </div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Ouvre YouTube avec la démonstration de l'exercice</div>
-    <div id="searchExResults"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modalSearchExercise')">Fermer</button>
-    </div>
-  </div>
-</div>
 
 
 <!-- MODAL: Calories cardio -->
@@ -2088,8 +2077,6 @@ function renderExCard(ex, showAdd) {
     return `<div style="position:relative">
       <div class="ex-card" onclick="openExerciseDetail(${ex.id},false)" style="margin-bottom:0">
         <div class="ex-card-img">${photo}</div>
-        <div class="ex-card-name">${ex.name}</div>
-        <div class="ex-card-meta">${ex.type}${ex.video?' 📹':''}</div>
       </div>
       <button class="add-ex-btn" onclick="event.stopPropagation();addExerciseToSessionById(${ex.id})" style="position:absolute;top:6px;right:6px;z-index:2">+</button>
     </div>`;
@@ -2146,13 +2133,12 @@ function toggleFav(id, event) {
 
 function renderExGrid(exList, showAddBtn) {
   const grouped = groupBy(exList, 'muscle');
-  const icons = { 'Pectoraux':'🏋️','Dos':'🔙','Épaules':'💪','Biceps':'💪','Triceps':'💪','Jambes':'🦵','Abdominaux':'🔥','Cardio':'🏃' };
   return Object.entries(grouped).map(([muscle, exs]) => `
     <div class="muscle-section">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;margin-top:4px">
-        <div style="flex:1;height:1px;background:var(--border)"></div>
-        <div class="muscle-label">${icons[muscle]||'💪'} ${muscle}</div>
-        <div style="flex:1;height:1px;background:var(--border)"></div>
+      <div style="display:flex;align-items:center;gap:0;margin-bottom:10px;margin-top:28px">
+        <div style="flex:1;height:3px;background:var(--accent)"></div>
+        <div style="padding:0 12px;background:var(--bg)"><div class="muscle-label">${muscle}</div></div>
+        <div style="flex:1;height:3px;background:var(--accent)"></div>
       </div>
       <div class="ex-grid">
         ${exs.map(ex => renderExCardWithFav(ex, showAddBtn)).join('')}
@@ -2184,9 +2170,15 @@ function renderExCardWithFav(ex, showAdd) {
   </div>`;
 }
 
+let currentLibSearch = '';
+
+function onLibSearch(val) {
+  currentLibSearch = val.trim().toLowerCase();
+  renderLibrary();
+}
+
 function renderLibrary() {
   const showAdd = !!session;
-  // Safety: if exercises empty, try reloading from storage
   if (!exercises || exercises.length === 0) {
     const stored = load(STORAGE_KEYS.exercises);
     if (stored && stored.length > 0) exercises = stored;
@@ -2201,13 +2193,17 @@ function renderLibrary() {
     exList = exercises.filter(e => favorites.includes(e.id));
     emptyMsg = '<div class="empty-state"><div class="empty-icon">⭐</div><div>Ajoutez des favoris via ⭐ dans le détail d\'un exercice</div></div>';
   } else {
-    // Apply muscle filter
     exList = currentMuscleFilter === 'all'
       ? exercises
       : exercises.filter(e => e.muscle === currentMuscleFilter);
     emptyMsg = '<div class="empty-state"><div class="empty-icon">💪</div><div>Aucun exercice pour ce groupe</div></div>';
   }
-  const hideTitle = (currentLibTab === 'all' && currentMuscleFilter !== 'all') || currentLibTab !== 'all';
+  // Apply text search filter
+  if (currentLibSearch) {
+    exList = exList.filter(e => e.name.toLowerCase().includes(currentLibSearch));
+    emptyMsg = '<div class="empty-state"><div class="empty-icon">🔍</div><div>Aucun résultat pour "' + currentLibSearch + '"</div></div>';
+  }
+  const hideTitle = currentLibSearch || (currentLibTab === 'all' && currentMuscleFilter !== 'all') || currentLibTab !== 'all';
   document.getElementById('libraryList').innerHTML = exList.length
     ? renderExGrid(exList, showAdd, hideTitle)
     : emptyMsg;
@@ -2989,7 +2985,7 @@ function getDefaultProgrammes() {
   return [
     {
       id: 1, name: 'Push Pull Legs', desc: 'Programme 3 jours classique — hypertrophie',
-      sessionType: 'Push/Pull/Legs', color: '#e8ff47',
+      sessionType: 'Push/Pull/Legs', color: '#39ff14',
       days: [
         { name: 'Push', exIds: [1,2,9,10,14,13] },
         { name: 'Pull', exIds: [5,6,7,8,11,12] },
@@ -2998,7 +2994,7 @@ function getDefaultProgrammes() {
     },
     {
       id: 2, name: 'Haut / Bas du corps', desc: 'Programme 4 jours — force et hypertrophie',
-      sessionType: 'Haut/Bas', color: '#ff6b35',
+      sessionType: 'Haut/Bas', color: '#39ff14',
       days: [
         { name: 'Haut du corps A', exIds: [1,5,9,11,14] },
         { name: 'Bas du corps A',  exIds: [15,16,19,24,27] },
@@ -3008,7 +3004,7 @@ function getDefaultProgrammes() {
     },
     {
       id: 3, name: 'Full Body', desc: 'Programme 3 jours — débutant / remise en forme',
-      sessionType: 'Full Body', color: '#44c878',
+      sessionType: 'Full Body', color: '#39ff14',
       days: [
         { name: 'Jour A', exIds: [1,5,15,9,11] },
         { name: 'Jour B', exIds: [4,7,18,10,14] },
@@ -3030,7 +3026,7 @@ function renderProgrammes() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:${p.color||'var(--accent)'}">${p.name}</div>
-          <div style="font-size:13px;color:var(--muted);margin-top:2px">${p.desc||''}</div>
+          <div style="font-size:13px;color:#fff;margin-top:2px">${p.desc||''}</div>
         </div>
         <div style="display:flex;gap:6px">
           <button onclick="editProgramme(${p.id})" class="info-btn">✏️</button>
@@ -3038,18 +3034,18 @@ function renderProgrammes() {
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-        <span class="chip">${p.days.length} jours</span>
-        <span class="chip">${totalEx} exercices</span>
-        <span class="chip highlight">${p.sessionType||''}</span>
+        <span class="chip" style="color:#fff">${p.days.length} jours</span>
+        <span class="chip" style="color:#fff">${totalEx} exercices</span>
+        <span class="chip highlight" style="color:#fff">${p.sessionType||''}</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
         ${p.days.map((d,di) => `
           <div style="background:var(--surface2);border-radius:8px;padding:10px 12px">
             <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:${p.color||'var(--accent)'};margin-bottom:6px">${d.name}</div>
-            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+            <div style="display:flex;flex-direction:column;gap:0;margin-bottom:8px">
               ${d.exIds.map(id => {
                 const ex = exercises.find(e=>e.id===id);
-                return ex ? `<span class="chip" style="font-size:11px">${ex.name}</span>` : '';
+                return ex ? `<div style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;color:var(--accent2);padding:3px 0;border-bottom:1px solid rgba(255,107,53,0.15)">${ex.name}</div>` : '';
               }).join('')}
             </div>
             <button onclick="startFromProgramme(${p.id},${di})" class="btn btn-primary" style="font-size:13px;padding:8px">▶ Démarrer cette séance</button>
@@ -3095,10 +3091,9 @@ function setProgAddTab(tab) {
 function renderProgAddList() {
   const exList = progAddTabCurrent === 'fav' ? exercises.filter(e=>favorites.includes(e.id)) : exercises;
   const grouped = groupBy(exList, 'muscle');
-  const icons = {'Pectoraux':'🏋️','Dos':'🔙','Épaules':'💪','Biceps':'💪','Triceps':'💪','Jambes':'🦵','Abdominaux':'🔥','Cardio':'🏃'};
   document.getElementById('progAddExList').innerHTML = Object.entries(grouped).map(([muscle, exs]) => `
     <div style="margin-bottom:10px">
-      <div style="font-size:11px;color:var(--accent2);text-transform:uppercase;font-weight:700;letter-spacing:1px;margin-bottom:6px">${icons[muscle]||'💪'} ${muscle}</div>
+      <div style="font-size:11px;color:var(--accent2);text-transform:uppercase;font-weight:700;letter-spacing:1px;margin-bottom:6px">${muscle}</div>
       ${exs.map(ex => {
         const inProg = progExercises.find(e=>e.id===ex.id);
         return `<div style="display:flex;justify-content:space-between;align-items:center;background:${inProg?'rgba(232,255,71,0.08)':'var(--surface)'};border:1px solid ${inProg?'var(--accent)':'var(--border)'};border-radius:8px;padding:8px 12px;margin-bottom:5px">
@@ -3256,7 +3251,7 @@ function saveProgramme() {
     name,
     desc: document.getElementById('progDesc').value.trim(),
     sessionType: progActiveTypes.join(' / ') || 'Personnalisé',
-    color: '#e8ff47',
+    color: '#39ff14',
     days: progDays.map(d => ({
       name: d.name,
       exIds: (d.exercises||[]).map(e=>e.id),
@@ -3304,8 +3299,17 @@ function deleteProgramme(id) {
   renderProgrammes();
   showToast('Programme supprimé');
 }
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  // Only restore scroll if no other modals are open
+  if (!document.querySelector('.modal-overlay.open')) {
+    document.body.style.overflow = '';
+  }
+}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
 // ─── INIT ────────────────────────────────────────
