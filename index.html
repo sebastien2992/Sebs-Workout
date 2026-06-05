@@ -300,6 +300,7 @@
     <div style="display:flex;flex-direction:column;gap:6px;padding-top:2px">
       <button onclick="exportData()" style="background:var(--accent);border:none;border-radius:8px;color:var(--bg);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">⬇ Exporter</button>
       <button onclick="document.getElementById('importFile').click()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">⬆ Importer</button>
+      <button onclick="openResetModal()" style="background:transparent;border:1px solid var(--danger);border-radius:8px;color:var(--danger);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">🗑 Reset</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
     </div>
   </div>
@@ -685,6 +686,27 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <button class="btn btn-secondary" onclick="confirmCardioCalories(0)">Passer</button>
       <button class="btn btn-primary" onclick="confirmCardioCalories()">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: Réinitialisation -->
+<div class="modal-overlay" id="modalReset">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:42px;margin-bottom:12px">⚠️</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;margin-bottom:10px;color:var(--danger)">Réinitialisation</div>
+    <p style="font-size:15px;color:var(--muted);line-height:1.6;margin-bottom:20px">
+      Vous allez <strong style="color:var(--text)">supprimer toutes vos données</strong> :<br>
+      séances, historique, poids, favoris, exercices personnalisés et photos.<br><br>
+      <strong style="color:var(--danger)">Cette action est irréversible.</strong>
+    </p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px">
+      💡 Pensez à exporter vos données avant.
+    </p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal('modalReset')">Annuler</button>
+      <button class="btn btn-danger" onclick="confirmReset()">Tout supprimer</button>
     </div>
   </div>
 </div>
@@ -2682,6 +2704,34 @@ function deleteWeight(idx) {
   weightLog.splice(idx, 1);
   save('il_weightlog', weightLog);
   renderProfil();
+}
+
+function openResetModal() {
+  openModal('modalReset');
+}
+
+function confirmReset() {
+  closeModal('modalReset');
+  // Clear all data
+  const keys = ['il_exercises','il_history','il_session','il_weightlog','il_height',
+                 'il_favorites','il_customPhotos','il_stepslog','il_stepsgoal','il_programmes'];
+  keys.forEach(k => {
+    try { localStorage.removeItem(k); } catch {}
+    save(k, null);
+  });
+  // Reset in-memory variables
+  exercises   = DEFAULT_EXERCISES;
+  history     = [];
+  session     = null;
+  weightLog   = [];
+  userHeight  = null;
+  favorites   = [];
+  customPhotos = {};
+  programmes  = getDefaultProgrammes();
+  // Re-render
+  renderSession();
+  renderProfil();
+  showToast('Toutes les données ont été supprimées');
 }
 
 function exportData() {
