@@ -3332,8 +3332,10 @@ async function initApp() {
   programmes = (storedProg && storedProg.length > 0) ? storedProg : getDefaultProgrammes();
   renderSession();
   if (typeof renderProfil === 'function') renderProfil();
-  // Signal splash screen that app is ready
-  if (typeof window.onAppReady === 'function') window.onAppReady();
+  // Signal splash screen that app is ready — with 2s minimum display
+  setTimeout(function() {
+    if (typeof window.onAppReady === 'function') window.onAppReady();
+  }, 2000);
 }
 initApp();
 
@@ -3404,8 +3406,12 @@ self.addEventListener('fetch', e => {
     setTimeout(function() { splash.style.display = 'none'; }, 800);
   }
 
-  setTimeout(function() { splashReady = true; tryHide(); }, 2200);
-  window.onAppReady = function() { appReady = true; tryHide(); };
+  // No fixed timer — hide splash as soon as app is ready
+  window.onAppReady = function() {
+    splashReady = true;
+    appReady = true;
+    tryHide();
+  };
 })();
 </script>
 
