@@ -187,9 +187,13 @@
   .ex-card-meta { font-size:10px; color:var(--muted); padding:0 8px 8px; }
 </style>
 </head>
-<body><div id="appCover" style="position:fixed;inset:0;background:#0a0a0a;z-index:9998;pointer-events:none"></div>
+<body>
+<style>
+  #appWrapper { opacity: 0; transition: opacity 0.5s ease; }
+  #appWrapper.visible { opacity: 1; }
+</style>
 
-<header>
+<div id="appWrapper"><header>
   <div class="header-top">
     <div class="logo">SEB'S<span> WORKOUT</span></div>
     <div class="date-badge" id="todayDate"></div>
@@ -3307,6 +3311,7 @@ self.addEventListener('fetch', e => {
 }
 </script>
 
+</div><!-- end appWrapper -->
 <!-- SPLASH SCREEN -->
 <div id="splashScreen" style="
   position:fixed; inset:0; background:#0a0a0a; z-index:9999;
@@ -3339,8 +3344,10 @@ self.addEventListener('fetch', e => {
 
   function tryHide() {
     if (!splashReady || !appReady) return;
-    var cover = document.getElementById('appCover');
-    if (cover) { cover.style.transition='opacity 0.3s'; cover.style.opacity='0'; setTimeout(function(){cover.remove();},300); }
+    // Show app content
+    var app = document.getElementById('appWrapper');
+    if (app) app.classList.add('visible');
+    // Fade out splash
     var splash = document.getElementById('splashScreen');
     if (!splash) return;
     splash.style.opacity = '0';
