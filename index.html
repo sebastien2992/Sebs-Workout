@@ -3917,5 +3917,46 @@ setTimeout(function() {
 })();
 </script>
 
+
+<script>
+// ─── BOUTON RETOUR ANDROID ────────────────────────────────────────────────
+(function() {
+  // Push multiple states so back button has room to work
+  history.pushState({app:true}, '', window.location.href);
+  history.pushState({app:true}, '', window.location.href);
+  history.pushState({app:true}, '', window.location.href);
+
+  window.addEventListener('popstate', function(e) {
+    // Always push a new state to keep intercepting
+    history.pushState({app:true}, '', window.location.href);
+
+    // If a modal is open, close it
+    const openModal = document.querySelector('.modal-overlay.open');
+    if (openModal) {
+      openModal.classList.remove('open');
+      document.body.style.overflow = '';
+      return;
+    }
+
+    // If not on Séance tab, go back to Séance
+    const activePage = document.querySelector('.page.active');
+    if (activePage && activePage.id !== 'page-today') {
+      const todayTab = document.querySelector('[onclick*="today"]');
+      if (todayTab) showPage('today', todayTab);
+      return;
+    }
+
+    // On Séance with no session — ask to quit
+    if (!window.session) {
+      if (confirm('Quitter Seb\'s Workout ?')) {
+        // Can't programmatically close WebView, but this is best we can do
+        window.close();
+      }
+    }
+    // If session active — do nothing (stay in app)
+  });
+})();
+</script>
+
 </body>
 </html>
