@@ -227,7 +227,7 @@
       <div class="timer-controls">
         <button class="timer-btn" id="tbtn60" onclick="selectTimer(60)">1′</button>
         <button class="timer-btn" id="tbtn90" onclick="selectTimer(90)">1.5′</button>
-        <button class="timer-btn timer-btn-active" id="tbtn120" onclick="selectTimer(120)">2′</button>
+        <button class="timer-btn selected" id="tbtn120" onclick="selectTimer(120)">2′</button>
         <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
           <button class="timer-btn" id="tbtn0" onclick="selectTimer(0)">⏹</button>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--accent);line-height:1;letter-spacing:-0.5px" id="sessionElapsedSticky">0:00</div>
@@ -243,19 +243,19 @@
       <div class="session-badge">En cours</div>
     </div>
     <div id="exercisesList"></div>
-    <button class="btn btn-secondary mt8" onclick="openAddExercise()">+ Ajouter un exercice</button>
+    <button class="btn btn-secondary mt8" onclick="openLibraryFromSession()">+ Ajouter un exercice</button>
     <button class="btn btn-danger mt8" onclick="promptFinishSession()">Terminer la séance</button>
   </div>
 </div>
 
 <!-- LIBRARY -->
 <div id="page-library" class="page">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px">
     <div>
       <div class="section-title" style="margin-bottom:0">Exercices</div>
       <div class="section-sub" style="margin-bottom:0">Appuyez pour voir le détail</div>
     </div>
-    <button class="btn btn-primary" onclick="openCreateExercise()" style="padding:10px 14px;font-size:14px;width:auto;margin-top:4px">+ Créer</button>
+    <button class="btn btn-primary" onclick="openCreateExercise()" style="padding:10px 14px;font-size:14px;width:auto">+ Créer</button>
   </div>
   <!-- Search bar -->
   <div style="position:relative;margin-bottom:12px">
@@ -596,8 +596,20 @@
       <input class="text-input" id="newExVideo" placeholder="ex: 4Y2ZppbVFes">
       <div style="font-size:11px;color:var(--muted);margin-top:4px">L'ID se trouve dans l'URL YouTube après "v="</div>
     </div>
+    <div class="input-group">
+      <label class="input-label">Photo</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button type="button" onclick="triggerCreateCamera()" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:10px;cursor:pointer">📷 Caméra</button>
+        <button type="button" onclick="triggerCreateGallery()" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:10px;cursor:pointer">🖼️ Galerie</button>
+      </div>
+      <input type="file" id="createExCameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleCreateExPhoto(event)">
+      <input type="file" id="createExGalleryInput" accept="image/*" style="display:none" onchange="handleCreateExPhoto(event)">
+      <div id="createExPhotoPreview" style="width:100%;height:120px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;overflow:hidden">
+        Aucune photo sélectionnée
+      </div>
+    </div>
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modalCreateExercise')">Annuler</button>
+      <button class="btn btn-secondary" onclick="closeModal('modalCreateExercise');window._createExPhoto=null;">Annuler</button>
       <button class="btn btn-primary" onclick="createExercise()">Créer</button>
     </div>
   </div>
@@ -624,10 +636,11 @@
 <div class="modal-overlay" id="modalHistoryDetail">
   <div class="modal">
     <div id="historyDetailContent"></div>
-    <div class="modal-actions" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px">
+    <div class="modal-actions" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-top:16px">
       <button class="btn btn-secondary" style="padding:14px 4px;font-size:14px" onclick="closeModal('modalHistoryDetail')">Fermer</button>
-      <button class="btn btn-primary" id="redoBtn" style="padding:14px 4px;font-size:14px" onclick="redoSession()">🔁 Refaire</button>
-      <button class="btn btn-danger" style="padding:14px 4px;font-size:14px" onclick="deleteSession()">🗑 Supprimer</button>
+      <button class="btn btn-secondary" style="padding:14px 4px;font-size:14px" id="editHistBtn" onclick="editHistorySession()">Modifier</button>
+      <button class="btn btn-primary" id="redoBtn" style="padding:14px 4px;font-size:14px" onclick="redoSession()">Refaire</button>
+      <button class="btn btn-danger" style="padding:14px 4px;font-size:14px" onclick="deleteSession()">Supprimer</button>
     </div>
   </div>
 </div>
@@ -762,6 +775,47 @@
       <button class="btn btn-secondary" onclick="closeModal('modalBikeSummary')">Annuler</button>
       <button class="btn btn-primary" onclick="confirmBikeDone()">Confirmer</button>
     </div>
+  </div>
+</div>
+
+
+<!-- MODAL: Ajouter exercice depuis séance (plein écran) -->
+<div class="modal-overlay" id="modalAddFromSession" style="align-items:flex-start;padding:0;z-index:400">
+  <div style="width:100%;height:100vh;background:var(--bg);display:flex;flex-direction:column;overflow:hidden">
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 8px;background:var(--bg);flex-shrink:0;border-bottom:1px solid var(--border)">
+      <button onclick="closeModal('modalAddFromSession')" class="btn btn-primary" style="padding:10px 10px;font-size:13px;width:auto;display:flex;align-items:center;gap:4px;white-space:nowrap">← RETOUR</button>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px">Ajouter un exercice</div>
+      <button class="btn btn-primary" onclick="openCreateExercise()" style="padding:10px 14px;font-size:14px;width:auto">+ Créer</button>
+    </div>
+    <!-- Search -->
+    <div style="padding:10px 16px 0;flex-shrink:0">
+      <div style="position:relative">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--muted)">🔍</span>
+        <input class="text-input" id="fsSearchInput" placeholder="Filtrer..."
+          oninput="refreshFSList()" style="padding-left:36px;font-size:15px">
+      </div>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex;gap:6px;padding:10px 16px 0;flex-shrink:0">
+      <button id="fsTabAll" onclick="setFSTab('all')" class="lib-tab lib-tab-active">Tous</button>
+      <button id="fsTabFav" onclick="setFSTab('fav')" class="lib-tab">⭐ Favoris</button>
+      <button id="fsTabHist" onclick="setFSTab('hist')" class="lib-tab">Historique</button>
+    </div>
+    <!-- Muscle pills -->
+    <div id="fsMusclePills" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;flex-shrink:0">
+      <button onclick="setFSMuscle('all')" data-fm="all" class="muscle-pill muscle-pill-active">Tous</button>
+      <button onclick="setFSMuscle('Biceps')" data-fm="Biceps" class="muscle-pill">Biceps</button>
+      <button onclick="setFSMuscle('Triceps')" data-fm="Triceps" class="muscle-pill">Triceps</button>
+      <button onclick="setFSMuscle('Pectoraux')" data-fm="Pectoraux" class="muscle-pill">Pectoraux</button>
+      <button onclick="setFSMuscle('Dos')" data-fm="Dos" class="muscle-pill">Dos</button>
+      <button onclick="setFSMuscle('Épaules')" data-fm="Épaules" class="muscle-pill">Épaules</button>
+      <button onclick="setFSMuscle('Jambes')" data-fm="Jambes" class="muscle-pill">Jambes</button>
+      <button onclick="setFSMuscle('Abdominaux')" data-fm="Abdominaux" class="muscle-pill">Abdominaux</button>
+      <button onclick="setFSMuscle('Cardio')" data-fm="Cardio" class="muscle-pill">Cardio</button>
+    </div>
+    <!-- Exercise list -->
+    <div id="fsExList" style="overflow-y:auto;flex:1;padding:0 16px 16px"></div>
   </div>
 </div>
 
@@ -1287,11 +1341,18 @@ function markExerciseDone(ei) {
 }
 
 function selectTimer(s) {
-  // Update selected highlight
-  [60,90,120,0].forEach(v => {
-    const btn = document.getElementById('tbtn'+v);
-    if (btn) btn.classList.toggle('selected', v === s);
-  });
+  // Update selected highlight — stop button never steals highlight
+  if (s !== 0) {
+    [60,90,120].forEach(v => {
+      const btn = document.getElementById('tbtn'+v);
+      if (btn) {
+        btn.classList.toggle('selected', v === s);
+        btn.classList.remove('timer-btn-active');
+      }
+    });
+  }
+  const stopBtn = document.getElementById('tbtn0');
+  if (stopBtn) { stopBtn.classList.remove('selected'); stopBtn.classList.remove('timer-btn-active'); }
   if (s === 0) {
     resetTimer();
   } else {
@@ -1413,6 +1474,17 @@ function openNewSession() { openModal('modalNewSession'); }
 
 function startSession(name) {
   session = { name, startTime: Date.now(), exercises: [] };
+  if (window._pendingAddExId) {
+    const pendingId = window._pendingAddExId;
+    window._pendingAddExId = null;
+    const ex = exercises.find(e=>e.id===pendingId);
+    if (ex) {
+      const initSet = ex.isBike?{km:'',hours:'',mins:'',done:false}:ex.type==='Cardio'?{speed:'',incline:'',minutes:'',done:false}:{reps:'',kg:'',done:false};
+      session.exercises.push({...ex,expanded:true,startTime:null,elapsedSecs:0,finished:false,sets:[initSet]});
+  autoMarkPrev();
+      save(STORAGE_KEYS.session, session);
+    }
+  }
   // Request notification permission for Watch relay
   requestNotificationPermission();
   save(STORAGE_KEYS.session, session);
@@ -1632,6 +1704,8 @@ function addSet(ei) {
   renderExercises();
   updateProgress();
 }
+
+function autoMarkPrev() { if(session&&session.exercises.length>1){const p=session.exercises[session.exercises.length-2];if(!p.finished)p.finished=true;}}
 function updateSet(ei, si, field, val) {
   session.exercises[ei].sets[si][field] = val;
   save(STORAGE_KEYS.session, session);
@@ -1692,7 +1766,7 @@ function openExerciseDetail(id, fromSession=false) {
   currentDetailId = id;
   detailFromSession = fromSession;
   const addBtnTop = document.getElementById('detailAddBtnTop');
-  if (addBtnTop) addBtnTop.style.display = (!fromSession && session) ? 'block' : 'none';
+  if (addBtnTop) addBtnTop.style.display = 'block';
 
   const tipsHtml = ex.tips && ex.tips.length
     ? `<div class="detail-tips">
@@ -1872,8 +1946,12 @@ function duplicateExercise() {
 }
 
 function addCurrentExToSession() {
-  if (!currentDetailId || !session) {
-    showToast('Démarrez d\'abord une séance');
+  if (!currentDetailId) return;
+  if (!session) {
+    // No session — open new session modal then add after
+    window._pendingAddExId = currentDetailId;
+    closeModal('modalExerciseDetail');
+    openModal('modalNewSession');
     return;
   }
   const ex = exercises.find(e=>e.id===currentDetailId);
@@ -1882,16 +1960,24 @@ function addCurrentExToSession() {
     ? {speed:'',incline:'',minutes:'',done:false}
     : {reps:'',kg:'',done:false};
   session.exercises.push({ ...ex, expanded:true, startTime:Date.now(), elapsedSecs:0, finished:false, sets:[initSet] });
+  autoMarkPrev();
   save(STORAGE_KEYS.session, session);
   closeModal('modalExerciseDetail');
   closeModal('modalAddExercise');
-  // Navigate to Séance tab manually
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-today').classList.add('active');
-  const tabs = document.querySelectorAll('.tab');
-  tabs.forEach(t=>{ if(t.textContent.trim()==='Séance') t.classList.add('active'); });
+  closeModal('modalAddFromSession');
   renderSession();
+  if (window._addingFromSession) {
+    // Came from session → go back to session
+    window._addingFromSession = false;
+    const banner = document.getElementById('sessionReturnBanner');
+    if (banner) banner.remove();
+    const tabsEl = document.querySelector('.tabs');
+    if (tabsEl && session) tabsEl.classList.add('session-active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('page-today').classList.add('active');
+    document.querySelectorAll('.tab').forEach(t=>{ if(t.textContent.trim()==='Séance') t.classList.add('active'); });
+  }
   showToast(ex.name + ' ajouté ✓');
 }
 
@@ -2002,10 +2088,100 @@ function addExFromHistory(idx) {
   }
   const ex = exercises.find(ex=>ex.id===e.id)||{id:e.id,name:e.name,muscle:e.muscle,type:e.type,isBike:e.isBike};
   session.exercises.push({...ex,expanded:true,startTime:null,elapsedSecs:0,finished:false,sets:prevSets});
+  autoMarkPrev();
   save(STORAGE_KEYS.session, session);
   closeModal('modalAddExercise');
   renderSession();
   showToast(e.name+' ajouté avec données précédentes ✓');
+}
+
+let fsTab = 'all', fsMuscle = 'all';
+
+function openLibraryFromSession() {
+  fsTab = 'all'; fsMuscle = 'all';
+  document.getElementById('fsSearchInput').value = '';
+  document.querySelectorAll('#fsMusclePills button').forEach(b=>b.className='muscle-pill'+(b.dataset.fm==='all'?' muscle-pill-active':''));
+  ['All','Fav','Hist'].forEach(t=>{
+    const el=document.getElementById('fsTab'+t);
+    if(el) el.className='lib-tab'+(t==='All'?' lib-tab-active':'');
+  });
+  refreshFSList();
+  openModal('modalAddFromSession');
+}
+
+function setFSTab(tab) {
+  fsTab = tab;
+  ['All','Fav','Hist'].forEach(t=>{
+    const el=document.getElementById('fsTab'+t);
+    if(el) el.className='lib-tab'+(t.toLowerCase()===tab?' lib-tab-active':'');
+  });
+  const pills=document.getElementById('fsMusclePills');
+  if(pills) pills.style.display=tab==='hist'?'none':'flex';
+  refreshFSList();
+}
+
+function setFSMuscle(m) {
+  fsMuscle = m;
+  document.querySelectorAll('#fsMusclePills button').forEach(b=>b.className='muscle-pill'+(b.dataset.fm===m?' muscle-pill-active':''));
+  refreshFSList();
+}
+
+function refreshFSList() {
+  const container = document.getElementById('fsExList');
+  if (!container) return;
+  const q = (document.getElementById('fsSearchInput')?.value||'').trim().toLowerCase();
+
+  if (fsTab === 'hist') {
+    window._fsHistCache = [];
+    const list = (q ? getExerciseHistory().filter(e=>e.name.toLowerCase().includes(q)) : getExerciseHistory());
+    if (!list.length) { container.innerHTML='<div class="empty-state">Aucun historique</div>'; return; }
+    const muscleOrder=['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Abdominaux','Cardio','Autre'];
+    const groups={};
+    list.forEach(e=>{const m=e.muscle||'Autre';if(!groups[m])groups[m]=[];groups[m].push(e);});
+    container.innerHTML=Object.keys(groups).sort((a,b)=>(muscleOrder.indexOf(a)||99)-(muscleOrder.indexOf(b)||99)).map(muscle=>{
+      const cards=groups[muscle].map(e=>{
+        const idx=window._fsHistCache.push(e)-1;
+        const doneSets=(e.sets||[]).filter(s=>s.done||s.km||s.mins);
+        let perf='';
+        if(e.isBike){const s=e.sets[0]||{};const km=parseFloat(s.km)||0;const mins=(parseInt(s.hours)||0)*60+(parseInt(s.mins)||0);perf=(km>0?km+'km ':'')+( mins>0?mins+'min':'');}
+        else if(e.type==='Cardio'){const mins=doneSets.reduce((a,s)=>a+(parseFloat(s.minutes)||0),0);perf=mins>0?Math.round(mins)+'min':'';}
+        else{perf=doneSets.length+' série'+(doneSets.length>1?'s':'');const bk=Math.max(0,...doneSets.map(s=>parseFloat(s.kg)||0));if(bk>0)perf+=' · '+bk+'kg';}
+        return `<div class="history-item" style="cursor:pointer;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center" onclick="addFSFromHist(${idx})">
+          <div><div style="font-size:11px;color:var(--muted)">${new Date(e.date).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px">${e.name}</div>
+          ${perf?`<span class="chip highlight" style="font-size:12px">${perf}</span>`:''}</div>
+          <button onclick="event.stopPropagation();addFSFromHist(${idx})" style="background:var(--accent);border:none;border-radius:8px;color:var(--bg);font-weight:700;font-size:16px;padding:6px 14px;cursor:pointer">+</button>
+        </div>`;
+      }).join('');
+      return `<div style="display:flex;align-items:center;gap:0;margin:16px 0 8px"><div style="flex:1;height:2px;background:var(--accent)"></div><div style="padding:0 10px;background:var(--bg);font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:14px;color:#fff;text-transform:uppercase;letter-spacing:2px">${muscle}</div><div style="flex:1;height:2px;background:var(--accent)"></div></div>${cards}`;
+    }).join('');
+    return;
+  }
+
+  let exList = fsTab==='fav' ? exercises.filter(e=>favorites.includes(e.id)) : (fsMuscle==='all'?exercises:exercises.filter(e=>e.muscle===fsMuscle));
+  if(q) exList=exList.filter(e=>e.name.toLowerCase().includes(q));
+  container.innerHTML = exList.length ? renderExGrid(exList, true, fsMuscle!=='all') : '<div class="empty-state">Aucun résultat</div>';
+}
+
+function addFSFromHist(idx) {
+  const e = window._fsHistCache[idx];
+  if (!e || !session) return;
+  let prevSets;
+  if(e.isBike){const s=(e.sets&&e.sets[0])||{};prevSets=[{km:s.km||'',hours:s.hours||'',mins:s.mins||'',done:false}];}
+  else if(e.type==='Cardio'){prevSets=(e.sets||[]).filter(s=>s.done).map(s=>({speed:s.speed||'',incline:s.incline||'',minutes:s.minutes||'',done:false}));if(!prevSets.length)prevSets=[{speed:'',incline:'',minutes:'',done:false}];}
+  else{prevSets=(e.sets||[]).filter(s=>s.done).map(s=>({reps:s.reps||'',kg:s.kg||'',done:false}));if(!prevSets.length)prevSets=[{reps:'',kg:'',done:false}];}
+  const ex=exercises.find(ex=>ex.id===e.id)||{id:e.id,name:e.name,muscle:e.muscle,type:e.type,isBike:e.isBike};
+  session.exercises.push({...ex,expanded:true,startTime:null,elapsedSecs:0,finished:false,sets:prevSets});
+  autoMarkPrev();
+  save(STORAGE_KEYS.session,session);
+  closeModal('modalAddFromSession');
+  renderSession();
+  showToast(e.name+' ajouté ✓');
+}
+
+function editHistorySession() {
+  // TODO: Open edit modal for history session
+  showToast('Fonctionnalité à venir');
 }
 
 function openAddExercise() {
@@ -2032,15 +2208,17 @@ function addExerciseToSessionById(id) {
     showToast('Démarrez d\'abord une séance');
     return;
   }
-  const initSet = ex.type === 'Cardio'
-    ? {speed:'',incline:'',minutes:'',done:false}
+  const initSet = ex.isBike ? {km:'',hours:'',mins:'',done:false}
+    : ex.type === 'Cardio' ? {speed:'',incline:'',minutes:'',done:false}
     : {reps:'',kg:'',done:false};
-  session.exercises.push({ ...ex, expanded:true, startTime:Date.now(), elapsedSecs:0, finished:false, sets:[initSet] });
+  session.exercises.push({ ...ex, expanded:true, startTime:null, elapsedSecs:0, finished:false, sets:[initSet] });
+  autoMarkPrev();
   save(STORAGE_KEYS.session, session);
   closeModal('modalAddExercise');
+  closeModal('modalAddFromSession');
+  closeModal('modalExerciseDetail');
   renderSession();
-  showToast(ex.name + ' ajouté à la séance ✓');
-  // Re-render library to update + buttons
+  showToast(ex.name + ' ajouté ✓');
   renderLibrary();
 }
 
@@ -2524,6 +2702,9 @@ function openCreateExercise() {
   document.getElementById('autoFillStatus').textContent = '';
   document.getElementById('autoFillBtn').textContent = '✨ Auto';
   document.getElementById('autoFillBtn').disabled = false;
+  window._createExPhoto = null;
+  const preview = document.getElementById('createExPhotoPreview');
+  if (preview) preview.innerHTML = 'Aucune photo sélectionnée';
   openModal('modalCreateExercise');
 }
 
@@ -2654,11 +2835,42 @@ function prefillCreateExercise(name) {
   document.getElementById('newExVideo').value = '';
   openModal('modalCreateExercise');
 }
+function triggerCreateCamera() {
+  document.getElementById('createExCameraInput').click();
+}
+function triggerCreateGallery() {
+  document.getElementById('createExGalleryInput').click();
+}
+function handleCreateExPhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxW = 400, maxH = 300;
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = h * maxW / w; w = maxW; }
+      if (h > maxH) { w = w * maxH / h; h = maxH; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const data = canvas.toDataURL('image/jpeg', 0.8);
+      window._createExPhoto = data;
+      const preview = document.getElementById('createExPhotoPreview');
+      preview.innerHTML = `<img src="${data}" style="width:100%;height:100%;object-fit:cover">`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function createExercise() {
   const name = document.getElementById('newExName').value.trim();
   if (!name) { showToast('Entrez un nom'); return; }
+  const newId = Date.now();
   exercises.push({
-    id: Date.now(),
+    id: newId,
     name,
     muscle: document.getElementById('newExMuscle').value,
     type: document.getElementById('newExType').value,
@@ -2666,9 +2878,16 @@ function createExercise() {
     tips: window._autoTips || [],
     video: document.getElementById('newExVideo').value.trim() || null
   });
+  // Save photo if provided
+  if (window._createExPhoto) {
+    customPhotos[newId] = window._createExPhoto;
+    save(STORAGE_KEYS.customPhotos, customPhotos);
+    window._createExPhoto = null;
+  }
   window._autoTips = [];
   save(STORAGE_KEYS.exercises, exercises);
   ['newExName','newExDesc','newExVideo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('createExPhotoPreview').innerHTML = 'Aucune photo sélectionnée';
   closeModal('modalCreateExercise');
   renderLibrary();
   showToast(`${name} créé`);
@@ -2868,6 +3087,7 @@ function redoExerciseToSession(e) {
 
   const ex = exercises.find(ex=>ex.id===e.id) || {id:e.id,name:e.name,muscle:e.muscle,type:e.type,isBike:e.isBike};
   session.exercises.push({...ex, expanded:true, startTime:null, elapsedSecs:0, finished:false, sets:prevSets});
+  autoMarkPrev();
   save(STORAGE_KEYS.session, session);
   closeModal('modalHistoryDetail');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -2893,15 +3113,30 @@ function renderHistory() {
     return `<div class="history-item" onclick="openHistoryDetail(${idx})" style="cursor:pointer">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div>
-          <div class="history-date">${dateStr} · ${fmtMins(s.duration||0)}</div>
+          <div class="history-date">${dateStr}</div>
           <div class="history-name">${s.name}</div>
         </div>
         <span style="color:var(--muted);font-size:20px;margin-top:4px">›</span>
       </div>
-      <div class="history-chips" style="margin-top:6px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
         <span class="chip highlight">${s.exercises.length} exercice${s.exercises.length>1?'s':''}</span>
-        <span class="chip highlight">${fmtMins(s.duration||0)}</span>
         ${s.calories?`<span class="chip highlight">🔥 ${s.calories} kcal</span>`:''}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+        <span class="chip highlight">${fmtMins(s.duration||0)}</span>
+        ${(()=>{
+          const strengthSecs = (s.exercises||[]).filter(e=>e.type!=='Cardio').reduce((a,e)=>a+(e.elapsedSecs||0),0);
+          const cardioMins = (s.exercises||[]).filter(e=>e.type==='Cardio').reduce((a,e)=>{
+            if(e.isBike){const st=e.sets[0]||{};return a+(parseInt(st.hours)||0)*60+(parseInt(st.mins)||0);}
+            return a+e.sets.filter(s=>s.done).reduce((b,s)=>b+(parseFloat(s.minutes)||0),0);
+          },0);
+          let parts=[];
+          if(strengthSecs>30) parts.push('💪 '+fmtMins(Math.round(strengthSecs/60)));
+          if(cardioMins>0) parts.push('🏃 '+fmtMins(Math.round(cardioMins)));
+          return parts.map(p=>`<span class="chip">${p}</span>`).join('');
+        })()}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
         ${muscles.map(m=>`<span class="chip">${m}</span>`).join('')}
       </div>
     </div>`;
@@ -2959,13 +3194,35 @@ function openHistoryDetail(idx) {
 
   document.getElementById('historyDetailContent').innerHTML = `
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px;margin-bottom:2px">${s.name}</div>
-    <div style="font-size:14px;color:var(--muted);margin-bottom:6px">${dateStr}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-      <span class="chip highlight">${s.exercises.length} exercices</span>
-      <span class="chip highlight">${fmtMins(s.duration||0)}</span>
-      ${totalVol?`<span class="chip highlight">${Math.round(totalVol)} kg volume</span>`:''}
-      ${s.calories?`<span class="chip highlight">🔥 ${s.calories} kcal</span>`:''}
+    <div style="font-size:14px;color:var(--muted);margin-bottom:10px">${dateStr}</div>
+
+    ${/* Ligne 1: nb exercices + calories */ ''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      <span class="chip highlight">${s.exercises.length} exercice${s.exercises.length>1?'s':''}</span>
+      ${s.calories ? `<span class="chip highlight">🔥 ${s.calories} kcal</span>` : ''}
     </div>
+
+    ${/* Ligne 2: temps total + muscu + cardio */ ''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      <span class="chip highlight">${fmtMins(s.duration||0)} total</span>
+      ${(()=>{
+        const strengthSecs = (s.exercises||[]).filter(e=>e.type!=='Cardio').reduce((a,e)=>a+(e.elapsedSecs||0),0);
+        const cardioMins = (s.exercises||[]).filter(e=>e.type==='Cardio').reduce((a,e)=>{
+          if(e.isBike){const st=e.sets[0]||{};return a+(parseInt(st.hours)||0)*60+(parseInt(st.mins)||0);}
+          return a+e.sets.filter(s=>s.done).reduce((b,s)=>b+(parseFloat(s.minutes)||0),0);
+        },0);
+        let parts=[];
+        if(strengthSecs>30) parts.push('💪 '+fmtMins(Math.round(strengthSecs/60)));
+        if(cardioMins>0) parts.push('🏃 '+fmtMins(Math.round(cardioMins)));
+        return parts.map(p=>`<span class="chip">${p}</span>`).join('');
+      })()}
+    </div>
+
+    ${/* Ligne 3: groupes musculaires */ ''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      ${[...new Set((s.exercises||[]).filter(e=>e.sets.some(x=>x.done)).map(e=>e.muscle))].map(m=>`<span class="chip">${m}</span>`).join('')}
+    </div>
+
     ${exHtml || '<div style="color:var(--muted);font-size:13px">Aucune série complétée</div>'}
   `;
   openModal('modalHistoryDetail');
