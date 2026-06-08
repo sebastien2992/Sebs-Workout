@@ -216,6 +216,23 @@
     </div>
   </div>
   <div id="active-session" style="display:none">
+    <!-- EXT SESSION VIEW -->
+    <div id="ext-session-view" style="display:none">
+      <div style="text-align:center;padding:30px 20px 20px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:48px;color:var(--accent);margin-bottom:4px" id="extSportTitle">—</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:24px" id="extSessionTime">Démarré à —</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:72px;color:var(--text);letter-spacing:-2px;line-height:1" id="extChronoDisplay">00:00:00</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:8px">Chronomètre</div>
+      </div>
+      <div style="margin-top:16px">
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-top:8px">
+          <button class="btn btn-secondary" style="border:1px solid var(--danger);color:var(--danger)" onclick="cancelSession()">Annuler</button>
+          <button class="btn btn-danger" onclick="finishExtSession()">Terminer</button>
+        </div>
+      </div>
+    </div>
+    <!-- GYM SESSION VIEW -->
+    <div id="gym-session-view">
     <div class="timer-bar">
       <div>
         <div class="timer-label">Repos</div>
@@ -245,6 +262,7 @@
       <button class="btn btn-secondary" style="border:1px solid var(--danger);color:var(--danger)" onclick="cancelSession()">Annuler</button>
       <button class="btn btn-danger" onclick="promptFinishSession()">Terminer la séance</button>
     </div>
+    </div><!-- end gym-session-view -->
   </div>
 </div>
 
@@ -489,11 +507,55 @@
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:2px">Muscles travaillés</div><div style="font-size:12px;color:var(--muted);margin-bottom:10px">Cette semaine</div>
     <div id="muscleStats"></div>
   </div>
+  <!-- Outdoor stats -->
+  <div id="outdoorStatsSection" data-filter="week" class="card" style="margin-bottom:16px"></div>
+
   <!-- Weekly history -->
   <div id="weeklyHistorySection" style="margin-top:8px"></div>
 </div>
 
 <!-- MODAL: Nouvelle séance -->
+
+<!-- MODAL: Gym ou Extérieur -->
+<div class="modal-overlay" id="modalLocation">
+  <div class="modal">
+    <div class="modal-title">Où s'entraîne-t-on ?</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+      <button class="session-type-btn" onclick="selectLocation('gym')">
+        <div class="session-type-label">🏋️ Gym</div>
+        <div class="session-type-sub">Musculation · Cardio</div>
+      </button>
+      <button class="session-type-btn" onclick="selectLocation('ext')">
+        <div class="session-type-label">🌿 Extérieur</div>
+        <div class="session-type-sub">Vélo · Tennis · Course · ...</div>
+      </button>
+    </div>
+    <button class="btn btn-secondary" onclick="closeModal('modalLocation')">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL: Sport extérieur -->
+<div class="modal-overlay" id="modalExtSport">
+  <div class="modal">
+    <div class="modal-title">Quel sport ?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <button style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;text-align:center" onclick="startExtSession('Vélo')"><div class="session-type-label">🚴 Vélo</div></button>
+      <button style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;text-align:center" onclick="startExtSession('Course')"><div class="session-type-label">🏃 Course</div></button>
+      <button style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;text-align:center" onclick="startExtSession('Tennis')"><div class="session-type-label">🎾 Tennis</div></button>
+      <button style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;text-align:center" onclick="startExtSession('Natation')"><div class="session-type-label">🏊 Natation</div></button>
+      <button style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;text-align:center" onclick="startExtSession('Randonnée')"><div class="session-type-label">🥾 Randonnée</div></button>
+      <button style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;text-align:center" onclick="startExtSession('Kayak')"><div class="session-type-label">🛶 Kayak</div></button>
+      <button style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;text-align:center" onclick="startExtSession('Soccer')"><div class="session-type-label">⚽ Soccer</div></button>
+      <button style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;text-align:center" onclick="startExtSession('Marche')"><div class="session-type-label">🚶 Marche</div></button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <input class="text-input" id="extSportCustom" placeholder="Autre sport..." style="flex:1;font-size:15px">
+      <button class="btn btn-primary" onclick="startExtSession(document.getElementById('extSportCustom').value)" style="width:auto;padding:12px">OK</button>
+    </div>
+    <button class="btn btn-secondary" style="margin-top:10px" onclick="closeModal('modalExtSport');openModal('modalLocation')">← Retour</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalNewSession">
   <div class="modal">
     <div class="modal-title">Quelle séance ?</div>
@@ -816,6 +878,45 @@
     </div>
     <!-- Exercise list -->
     <div id="fsExList" style="overflow-y:auto;flex:1;padding:0 16px 16px"></div>
+  </div>
+</div>
+
+
+<!-- MODAL: Résumé sport extérieur -->
+<div class="modal-overlay" id="modalExtSummary">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:36px;margin-bottom:8px">🌿</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;margin-bottom:4px" id="extSummarySport">—</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:20px">Durée mesurée : <span id="extSummaryChronoStr">—</span></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div>
+        <label class="input-label">Heures</label>
+        <input class="text-input" id="extSummaryHours" type="number" inputmode="numeric" min="0" style="text-align:center;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:700">
+      </div>
+      <div>
+        <label class="input-label">Minutes</label>
+        <input class="text-input" id="extSummaryTime" type="number" inputmode="numeric" min="0" max="59" style="text-align:center;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:700">
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="input-label">🔥 Calories (modifiable)</label>
+      <input class="text-input" id="extSummaryCal" type="number" inputmode="numeric" style="text-align:center;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:700">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div>
+        <label class="input-label">📍 Distance (km)</label>
+        <input class="text-input" id="extSummaryDist" type="number" inputmode="decimal" step="0.1" placeholder="0.0" style="text-align:center;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:700">
+      </div>
+      <div>
+        <label class="input-label">👟 Nombre de pas</label>
+        <input class="text-input" id="extSummarySteps" type="number" inputmode="numeric" placeholder="0" style="text-align:center;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:700">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal('modalExtSummary')">← Revenir</button>
+      <button class="btn btn-primary" onclick="saveExtSession()">Sauvegarder</button>
+    </div>
   </div>
 </div>
 
@@ -1470,7 +1571,41 @@ function showPage(id, tab) {
 }
 
 // ─── SESSION ─────────────────────────────────────
-function openNewSession() { openModal('modalNewSession'); }
+function openNewSession() { openModal('modalLocation'); }
+
+function selectLocation(loc) {
+  closeModal('modalLocation');
+  if (loc === 'gym') {
+    openModal('modalNewSession');
+  } else {
+    openModal('modalExtSport');
+  }
+}
+
+function startExtSession(sport) {
+  if (!sport || !sport.trim()) { showToast('Entrez un sport'); return; }
+  sport = sport.trim();
+  closeModal('modalExtSport');
+  closeModal('modalLocation');
+  session = {
+    name: sport,
+    sessionType: 'ext',
+    sport: sport,
+    startTime: Date.now(),
+    exercises: [],
+    isExt: true
+  };
+  // Request notification permission
+  requestNotificationPermission?.();
+  save(STORAGE_KEYS.session, session);
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-today').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>{ if(t.textContent.trim()==='Séance') t.classList.add('active'); });
+  renderSession();
+  startSessionTicker?.();
+  showToast(sport + ' démarré !');
+}
 
 function startSession(name) {
   session = { name, startTime: Date.now(), exercises: [] };
@@ -1502,6 +1637,18 @@ function renderSession() {
   }
   document.getElementById('no-session').style.display='none';
   document.getElementById('active-session').style.display='block';
+  // Show/hide ext session UI
+  const extView = document.getElementById('ext-session-view');
+  const gymView = document.getElementById('gym-session-view');
+  if (session.isExt) {
+    if (extView) extView.style.display='block';
+    if (gymView) gymView.style.display='none';
+    renderExtSession();
+    return;
+  } else {
+    if (extView) extView.style.display='none';
+    if (gymView) gymView.style.display='block';
+  }
   document.querySelector('.tabs').classList.add('session-active');
   document.getElementById('sessionNameDisplay').textContent = session.name;
   const started = new Date(session.startTime);
@@ -3107,6 +3254,81 @@ function redoExerciseToSession(e) {
   showToast(e.name + ' ajouté avec données précédentes ✓');
 }
 
+
+// ─── EXT SESSION ─────────────────────────────────────────────────────────
+let extChronoInterval = null;
+
+function renderExtSession() {
+  if (!session || !session.isExt) return;
+  const title = document.getElementById('extSportTitle');
+  const timeEl = document.getElementById('extSessionTime');
+  if (title) title.textContent = session.sport || '—';
+  if (timeEl) {
+    const d = new Date(session.startTime);
+    timeEl.textContent = 'Démarré à ' + d.getHours() + 'h' + d.getMinutes().toString().padStart(2,'0');
+  }
+  // Start chrono
+  clearInterval(extChronoInterval);
+  extChronoInterval = setInterval(function() {
+    const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
+    const h = Math.floor(elapsed/3600);
+    const m = Math.floor((elapsed%3600)/60);
+    const s = elapsed%60;
+    const el = document.getElementById('extChronoDisplay');
+    if (el) el.textContent = (h>0?h.toString().padStart(2,'0')+':':'') + m.toString().padStart(2,'0') + ':' + s.toString().padStart(2,'0');
+  }, 1000);
+}
+
+function finishExtSession() {
+  if (!session) return;
+  clearInterval(extChronoInterval);
+  const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
+  const totalMins = Math.round(elapsed / 60);
+  const estCal = Math.round(totalMins * 7); // ~7 kcal/min average outdoor
+  const h = Math.floor(totalMins/60), m = totalMins%60;
+  const timeStr = h>0 ? h+'h '+m+'min' : m+'min';
+
+  // Show summary modal
+  document.getElementById('extSummaryTime').value = m;
+  document.getElementById('extSummaryHours').value = h;
+  document.getElementById('extSummaryCal').value = estCal;
+  document.getElementById('extSummaryDist').value = '';
+  document.getElementById('extSummarySteps').value = '';
+  document.getElementById('extSummarySport').textContent = session.sport;
+  document.getElementById('extSummaryChronoStr').textContent = timeStr;
+  openModal('modalExtSummary');
+}
+
+function saveExtSession() {
+  if (!session) return;
+  const h = parseInt(document.getElementById('extSummaryHours').value)||0;
+  const m = parseInt(document.getElementById('extSummaryTime').value)||0;
+  const cal = parseInt(document.getElementById('extSummaryCal').value)||0;
+  const dist = parseFloat(document.getElementById('extSummaryDist').value)||0;
+  const steps = parseInt(document.getElementById('extSummarySteps').value)||0;
+  const duration = h*60 + m;
+
+  const entry = {
+    ...session,
+    endTime: Date.now(),
+    duration,
+    calories: cal,
+    distance: dist,
+    steps,
+    isExt: true
+  };
+  history.unshift(entry);
+  save(STORAGE_KEYS.history, history);
+  session = null;
+  save(STORAGE_KEYS.session, null);
+  clearInterval(extChronoInterval);
+  closeModal('modalExtSummary');
+  const tabs2 = document.querySelector('.tabs');
+  if (tabs2) tabs2.classList.remove('session-active');
+  renderSession();
+  showToast(entry.sport + ' sauvegardé ✓');
+}
+
 function renderHistory() {
   if (histTab !== 'seances') { renderExerciseHistory(); return; }
   if (!history.length) {
@@ -3125,12 +3347,23 @@ function renderHistory() {
           <div class="history-date">${dateStr}</div>
           <div class="history-name">${s.name}</div>
         </div>
-        <span style="color:var(--muted);font-size:20px;margin-top:4px">›</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          ${s.isExt ? '<span style="font-size:18px">🌿</span>' : ''}
+          <span style="color:var(--muted);font-size:20px;margin-top:2px">›</span>
+        </div>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-        <span class="chip highlight">${s.exercises.length} exercice${s.exercises.length>1?'s':''}</span>
-        ${s.calories?`<span class="chip highlight">🔥 ${s.calories} kcal</span>`:''}
+        ${s.isExt ? `
+          ${s.calories?`<span class="chip highlight">🔥 ${s.calories} kcal</span>`:''}
+          <span class="chip highlight">${fmtMins(s.duration||0)}</span>
+          ${s.distance?`<span class="chip">📍 ${s.distance} km</span>`:''}
+          ${s.steps?`<span class="chip">👟 ${s.steps.toLocaleString()} pas</span>`:''}
+        ` : `
+          <span class="chip highlight">${s.exercises.length} exercice${s.exercises.length>1?'s':''}</span>
+          ${s.calories?`<span class="chip highlight">🔥 ${s.calories} kcal</span>`:''}
+        `}
       </div>
+      ${!s.isExt ? `
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
         <span class="chip highlight">${fmtMins(s.duration||0)}</span>
         ${(()=>{
@@ -3147,7 +3380,7 @@ function renderHistory() {
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
         ${muscles.map(m=>`<span class="chip">${m}</span>`).join('')}
-      </div>
+      </div>` : ''}
     </div>`;
   }).join('');
 }
@@ -3293,11 +3526,12 @@ function renderStats() {
   monday.setHours(0, 0, 0, 0);
   const weekStart = monday.getTime();
   const weekSessions = history.filter(s=>s.startTime >= weekStart);
-  const upperWeek = weekSessions.filter(s=>s.name==='Haut du corps').length;
-  const lowerWeek = weekSessions.filter(s=>s.name==='Bas du corps').length;
-  const cardioWeek = weekSessions.filter(s=>s.name==='Cardio').length;
-  document.getElementById('statTotal').textContent = history.length;
-  document.getElementById('statWeek').textContent = weekSessions.length;
+  const weekGymSessions = weekSessions.filter(s=>!s.isExt);
+  const upperWeek = weekGymSessions.filter(s=>s.name==='Haut du corps').length;
+  const lowerWeek = weekGymSessions.filter(s=>s.name==='Bas du corps').length;
+  const cardioWeek = weekGymSessions.filter(s=>s.name==='Cardio').length;
+  document.getElementById('statTotal').textContent = history.filter(s=>!s.isExt).length;
+  document.getElementById('statWeek').textContent = weekGymSessions.length;
   document.getElementById('statUpper').textContent = upperWeek;
   document.getElementById('statLower').textContent = lowerWeek;
   const cardioEl = document.getElementById('statCardio'); if(cardioEl) cardioEl.textContent = cardioWeek;
@@ -3311,21 +3545,15 @@ function renderStats() {
       dayStart.setHours(0,0,0,0);
       const dayEnd = new Date(dayStart);
       dayEnd.setHours(23,59,59,999);
-      const hasSession = weekSessions.some(s => s.startTime >= dayStart.getTime() && s.startTime <= dayEnd.getTime());
+      const hasGym = weekSessions.some(s => !s.isExt && s.startTime >= dayStart.getTime() && s.startTime <= dayEnd.getTime());
+      const hasExt = weekSessions.some(s => s.isExt && s.startTime >= dayStart.getTime() && s.startTime <= dayEnd.getTime());
 
-      if (hasSession) {
-        return `<div style="display:flex;align-items:center;justify-content:center;">
-          <div style="background:transparent;border:2px solid #e8ff47;border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;">
-            <span style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#e8ff47;">${label}</span>
-          </div>
-        </div>`;
-      } else {
-        return `<div style="display:flex;align-items:center;justify-content:center;">
-          <div style="background:var(--surface2);border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;">
-            <span style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--muted);">${label}</span>
-          </div>
-        </div>`;
-      }
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="height:3px;width:32px;border-radius:2px;background:${hasExt?'#ffffff':'transparent'}"></div>
+        <div style="background:${hasGym?'transparent':'var(--surface2)'};border:${hasGym?'2px solid #e8ff47':'2px solid transparent'};border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:${hasGym?'#e8ff47':'var(--muted)'};">${label}</span>
+        </div>
+      </div>`;
     }).join('');
   }
 
@@ -3759,7 +3987,7 @@ function getDefaultProgrammes() {
   return [
     {
       id: 1, name: 'Push Pull Legs', desc: 'Programme 3 jours classique — hypertrophie',
-      sessionType: 'Push/Pull/Legs', color: '#39ff14',
+      sessionType: 'Push/Pull/Legs', color: 'var(--accent)',
       days: [
         { name: 'Push', exIds: [1,2,9,10,14,13] },
         { name: 'Pull', exIds: [5,6,7,8,11,12] },
@@ -3768,7 +3996,7 @@ function getDefaultProgrammes() {
     },
     {
       id: 2, name: 'Haut / Bas du corps', desc: 'Programme 4 jours — force et hypertrophie',
-      sessionType: 'Haut/Bas', color: '#39ff14',
+      sessionType: 'Haut/Bas', color: 'var(--accent)',
       days: [
         { name: 'Haut du corps A', exIds: [1,5,9,11,14] },
         { name: 'Bas du corps A',  exIds: [15,16,19,24,27] },
@@ -3778,7 +4006,7 @@ function getDefaultProgrammes() {
     },
     {
       id: 3, name: 'Full Body', desc: 'Programme 3 jours — débutant / remise en forme',
-      sessionType: 'Full Body', color: '#39ff14',
+      sessionType: 'Full Body', color: 'var(--accent)',
       days: [
         { name: 'Jour A', exIds: [1,5,15,9,11] },
         { name: 'Jour B', exIds: [4,7,18,10,14] },
@@ -3799,7 +4027,7 @@ function renderProgrammes() {
     return `<div class="prog-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:${p.color||'var(--accent)'}">${p.name}</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--accent)">${p.name}</div>
           <div style="font-size:13px;color:#fff;margin-top:2px">${p.desc||''}</div>
         </div>
         <div style="display:flex;gap:6px">
@@ -3815,11 +4043,11 @@ function renderProgrammes() {
       <div style="display:flex;flex-direction:column;gap:6px">
         ${p.days.map((d,di) => `
           <div style="background:var(--surface2);border-radius:8px;padding:10px 12px">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:${p.color||'var(--accent)'};margin-bottom:6px">${d.name}</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--accent);margin-bottom:6px">${d.name}</div>
             <div style="display:flex;flex-direction:column;gap:0;margin-bottom:8px">
               ${d.exIds.map(id => {
                 const ex = exercises.find(e=>e.id===id);
-                return ex ? `<div style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;color:var(--accent2);padding:3px 0;border-bottom:1px solid rgba(255,107,53,0.15)">${ex.name}</div>` : '';
+                return ex ? `<div style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;color:#ffffff;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.1)">${ex.name}</div>` : '';
               }).join('')}
             </div>
             <button onclick="startFromProgramme(${p.id},${di})" class="btn btn-primary" style="font-size:13px;padding:8px">▶ Démarrer cette séance</button>
@@ -4025,7 +4253,7 @@ function saveProgramme() {
     name,
     desc: document.getElementById('progDesc').value.trim(),
     sessionType: progActiveTypes.join(' / ') || 'Personnalisé',
-    color: '#39ff14',
+    color: 'var(--accent)',
     days: progDays.map(d => ({
       name: d.name,
       exIds: (d.exercises||[]).map(e=>e.id),
