@@ -310,6 +310,7 @@
   <div style="display:flex;gap:8px;margin-bottom:16px">
     <button id="histTabExercices" class="lib-tab lib-tab-active" onclick="setHistTab('exercices')">Exercices</button>
     <button id="histTabSeances" class="lib-tab" onclick="setHistTab('seances')">Séances</button>
+    <button id="histTabSemaine" class="lib-tab" onclick="setHistTab('semaine')">Semaines</button>
   </div>
   <div id="historyList"></div>
 </div>
@@ -494,7 +495,7 @@
   <div class="section-sub">Votre progression</div>
   <div class="stats-grid">
     <div class="stat-box"><div class="stat-num" id="statWeek">0</div><div class="stat-label">Séances cette semaine</div></div>
-    <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Séances totales</div></div>
+    <div class="stat-box" onclick="openWeeklyHistoryModal()" style="cursor:pointer"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Séances totales</div></div>
   </div>
   <div id="weekDaysBar" style="display:flex;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;"></div>
   <div style="margin-bottom:16px"><div class="stat-box" style="text-align:center"><div class="stat-num" id="statCalWeek" style="font-size:28px">0</div><div class="stat-label">🔥 Calories</div><div style="font-size:10px;color:var(--muted);margin-top:2px">cette semaine</div></div></div>
@@ -682,7 +683,10 @@
   <div class="modal">
     <!-- Add button always visible at top when session active -->
     <div id="detailAddBtnTop" style="display:none;margin-bottom:12px">
-      <button class="btn btn-primary" onclick="addCurrentExToSession()" style="font-size:16px">+ Ajouter à la séance</button>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
+        <button class="btn btn-primary" onclick="addCurrentExToSession()" style="font-size:16px">+ Ajouter à la séance</button>
+        <button class="btn" id="detailRedoBtn" onclick="redoExerciseFromDetail()" style="width:auto;padding:10px 14px;background:var(--accent);border:none;border-radius:8px;color:var(--bg);font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px" title="Refaire">↺</button>
+      </div>
     </div>
     <div id="exerciseDetailContent"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
@@ -778,6 +782,7 @@
       <button class="btn btn-secondary" onclick="closeModal('modalEditExercise')">Annuler</button>
       <button class="btn btn-primary" id="editExSaveBtn" onclick="saveEditExercise()">Sauvegarder</button>
     </div>
+    <button id="editExDeleteBtn" onclick="deleteCustomExercise(editingExId)" style="display:none;width:100%;margin-top:10px;background:transparent;border:1px solid var(--danger);border-radius:var(--radius);color:var(--danger);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;padding:12px;cursor:pointer">Supprimer cet exercice</button>
   </div>
 </div>
 
@@ -917,6 +922,18 @@
       <button class="btn btn-secondary" onclick="closeModal('modalExtSummary')">← Revenir</button>
       <button class="btn btn-primary" onclick="saveExtSession()">Sauvegarder</button>
     </div>
+  </div>
+</div>
+
+
+<!-- MODAL: Historique par semaine -->
+<div class="modal-overlay" id="modalWeeklyHistory" style="align-items:flex-start;padding:0">
+  <div style="width:100%;height:100vh;background:var(--bg);display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--border);flex-shrink:0">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px">Historique par semaine</div>
+      <button onclick="closeModal('modalWeeklyHistory')" class="btn btn-secondary" style="width:auto;padding:8px 14px">Fermer</button>
+    </div>
+    <div id="weeklyHistoryModalContent" style="overflow-y:auto;flex:1;padding:16px"></div>
   </div>
 </div>
 
@@ -1563,6 +1580,7 @@ function showPage(id, tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   tab.classList.add('active');
+  tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   if(id==='library') renderLibrary();
   if(id==='history') renderHistory();
   if(id==='stats') renderStats();
@@ -1915,6 +1933,23 @@ function openExerciseDetail(id, fromSession=false) {
   const addBtnTop = document.getElementById('detailAddBtnTop');
   if (addBtnTop) addBtnTop.style.display = 'block';
 
+  // Update Refaire button based on history
+  const redoBtn = document.getElementById('detailRedoBtn');
+  if (redoBtn) {
+    const histEntry = getExerciseHistory().find(e => e.id === id || e.name === exercises.find(ex=>ex.id===id)?.name);
+    if (histEntry) {
+      redoBtn.style.background = 'var(--accent)';
+      redoBtn.style.color = 'var(--bg)';
+      redoBtn.style.border = 'none';
+      redoBtn.style.opacity = '1';
+    } else {
+      redoBtn.style.background = 'var(--surface2)';
+      redoBtn.style.color = 'var(--muted)';
+      redoBtn.style.border = '1px solid var(--border)';
+      redoBtn.style.opacity = '0.5';
+    }
+  }
+
   const tipsHtml = ex.tips && ex.tips.length
     ? `<div class="detail-tips">
         <div class="detail-tips-title">⚡ Points clés</div>
@@ -1989,6 +2024,8 @@ function openEditExercise() {
     preview.innerHTML = '📷';
   }
   openModal('modalEditExercise');
+  const delBtn = document.getElementById('editExDeleteBtn');
+  if (delBtn) delBtn.style.display = 'block';
 }
 
 function handleExPhoto(event) {
@@ -2090,6 +2127,77 @@ function duplicateExercise() {
   editPhotoData = null;
   openModal('modalEditExercise');
   showToast('Exercice dupliqué — modifiez les détails');
+}
+
+function quickRedoExercise(id) {
+  const ex = exercises.find(e=>e.id===id);
+  if (!ex) return;
+  const histEntry = getExerciseHistory().find(e=>e.id===id||e.name===ex.name);
+  if (!histEntry) { showToast('Aucun historique'); return; }
+  if (!session) {
+    window._pendingAddExId = id;
+    window._pendingRedoEx = histEntry;
+    openModal('modalNewSession');
+    return;
+  }
+  let prevSets;
+  if (histEntry.isBike) {
+    const s=(histEntry.sets&&histEntry.sets[0])||{};
+    prevSets=[{km:s.km||'',hours:s.hours||'',mins:s.mins||'',done:false}];
+  } else if (histEntry.type==='Cardio') {
+    prevSets=(histEntry.sets||[]).filter(s=>s.done).map(s=>({speed:s.speed||'',incline:s.incline||'',minutes:s.minutes||'',done:false}));
+    if(!prevSets.length) prevSets=[{speed:'',incline:'',minutes:'',done:false}];
+  } else {
+    prevSets=(histEntry.sets||[]).filter(s=>s.done).map(s=>({reps:s.reps||'',kg:s.kg||'',done:false}));
+    if(!prevSets.length) prevSets=[{reps:'',kg:'',done:false}];
+  }
+  session.exercises.push({...ex,expanded:true,startTime:null,elapsedSecs:0,finished:false,sets:prevSets});
+  autoMarkPrev();
+  save(STORAGE_KEYS.session,session);
+  closeModal('modalAddFromSession');
+  const tabs3 = document.querySelector('.tabs');
+  if (tabs3 && session) tabs3.classList.add('session-active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const todayP = document.getElementById('page-today');
+  if (todayP) todayP.classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>{ if(t.textContent.trim()==='Séance') t.classList.add('active'); });
+  renderSession();
+  showToast(ex.name+' ajouté avec données précédentes ✓');
+}
+
+function redoExerciseFromDetail() {
+  if (!currentDetailId) return;
+  const ex = exercises.find(e=>e.id===currentDetailId);
+  if (!ex) return;
+  const histEntry = getExerciseHistory().find(e => e.id === currentDetailId || e.name === ex.name);
+  if (!histEntry) { showToast('Aucun historique pour cet exercice'); return; }
+  if (!session) {
+    window._pendingAddExId = currentDetailId;
+    window._pendingRedoEx = histEntry;
+    closeModal('modalExerciseDetail');
+    openModal('modalNewSession');
+    return;
+  }
+  // Add with previous sets data
+  let prevSets;
+  if (histEntry.isBike) {
+    const s=(histEntry.sets&&histEntry.sets[0])||{};
+    prevSets=[{km:s.km||'',hours:s.hours||'',mins:s.mins||'',done:false}];
+  } else if (histEntry.type==='Cardio') {
+    prevSets=(histEntry.sets||[]).filter(s=>s.done).map(s=>({speed:s.speed||'',incline:s.incline||'',minutes:s.minutes||'',done:false}));
+    if(!prevSets.length) prevSets=[{speed:'',incline:'',minutes:'',done:false}];
+  } else {
+    prevSets=(histEntry.sets||[]).filter(s=>s.done).map(s=>({reps:s.reps||'',kg:s.kg||'',done:false}));
+    if(!prevSets.length) prevSets=[{reps:'',kg:'',done:false}];
+  }
+  session.exercises.push({...ex,expanded:true,startTime:null,elapsedSecs:0,finished:false,sets:prevSets});
+  autoMarkPrev();
+  save(STORAGE_KEYS.session,session);
+  closeModal('modalExerciseDetail');
+  closeModal('modalAddFromSession');
+  renderSession();
+  showToast(ex.name+' ajouté avec données précédentes ✓');
 }
 
 function addCurrentExToSession() {
@@ -2773,14 +2881,16 @@ function renderExGrid(exList, showAddBtn) {
 function renderExCardWithFav(ex, showAdd) {
   const photo = getExPhoto(ex);
   const fav = isFav(ex.id);
+  const hasHist = typeof getExerciseHistory==='function' && getExerciseHistory().some(e=>e.id===ex.id||e.name===ex.name);
+
+  const redoBtnHtml = (showAdd && hasHist)
+    ? `<button onclick="event.stopPropagation();quickRedoExercise(${ex.id})" style="position:absolute;bottom:60px;right:6px;z-index:2;background:var(--accent);border:none;border-radius:6px;width:28px;height:28px;color:var(--bg);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900" title="Refaire">↺</button>`
+    : '';
   const addBtnHtml = showAdd
-    ? `<button class="add-ex-btn" onclick="event.stopPropagation();addExerciseToSessionById(${ex.id})" style="position:absolute;top:6px;right:6px;z-index:2">+</button>`
+    ? `<button onclick="event.stopPropagation();addExToSessionAndReturn(${ex.id})" style="position:absolute;top:6px;right:6px;z-index:2;background:var(--accent);border:none;border-radius:6px;width:28px;height:28px;color:var(--bg);font-size:18px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center" title="Ajouter">+</button>`
     : '';
   const favBtnHtml = `<button class="fav-btn" onclick="toggleFav(${ex.id},event)" style="position:absolute;top:6px;left:6px;z-index:2;background:rgba(0,0,0,0.5);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px">${fav?'⭐':'☆'}</button>`;
-  const isCustom = ex.id > 1000000;
-  const deleteBtnHtml = isCustom
-    ? `<button onclick="event.stopPropagation();deleteCustomExercise(${ex.id})" style="position:absolute;bottom:32px;right:6px;z-index:2;background:rgba(200,0,0,0.7);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>`
-    : '';
+
   return `<div style="position:relative">
     <div class="ex-card" onclick="openExerciseDetail(${ex.id},false)">
       <div class="ex-card-img">${photo}</div>
@@ -2789,8 +2899,22 @@ function renderExCardWithFav(ex, showAdd) {
     </div>
     ${favBtnHtml}
     ${addBtnHtml}
-    ${deleteBtnHtml}
+    ${redoBtnHtml}
   </div>`;
+}
+
+function addExToSessionAndReturn(id) {
+  addExerciseToSessionById(id);
+  // Return to session
+  const tabs2 = document.querySelector('.tabs');
+  if (tabs2 && session) tabs2.classList.add('session-active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const todayPage = document.getElementById('page-today');
+  if (todayPage) todayPage.classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>{ if(t.textContent.trim()==='Séance') t.classList.add('active'); });
+  closeModal('modalAddFromSession');
+  closeModal('modalAddExercise');
 }
 
 let currentLibSearch = '';
@@ -2850,6 +2974,8 @@ function deleteCustomExercise(id) {
   const idx = exercises.findIndex(e=>e.id===id);
   if (idx !== -1) { exercises.splice(idx,1); save(STORAGE_KEYS.exercises, exercises); }
   favorites = favorites.filter(f=>f!==id); save('il_favorites', favorites);
+  closeModal('modalEditExercise');
+  closeModal('modalExerciseDetail');
   renderLibrary();
   showToast('Exercice supprimé');
 }
@@ -3067,6 +3193,8 @@ function setHistTab(tab) {
   histTab = tab;
   document.getElementById('histTabExercices').className = 'lib-tab' + (tab==='exercices' ? ' lib-tab-active' : '');
   document.getElementById('histTabSeances').className = 'lib-tab' + (tab==='seances' ? ' lib-tab-active' : '');
+  const semEl = document.getElementById('histTabSemaine');
+  if (semEl) semEl.className = 'lib-tab' + (tab==='semaine' ? ' lib-tab-active' : '');
   renderHistory();
 }
 
@@ -3329,8 +3457,79 @@ function saveExtSession() {
   showToast(entry.sport + ' sauvegardé ✓');
 }
 
+
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1) - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d.getTime();
+}
+
+function renderWeeklyHistoryTab() {
+  const container = document.getElementById('historyList');
+  if (!container) return;
+
+  let week1Start = null;
+  if (weightLog && weightLog.length > 0) {
+    const sorted = [...weightLog].sort((a,b) => a.date - b.date);
+    week1Start = getWeekStart(sorted[0].date);
+  }
+
+  const nowWeekStart = getWeekStart(Date.now());
+  const gymHistory = history; // gym + ext
+
+  const weekMap = {};
+  gymHistory.forEach(s => {
+    const ws = getWeekStart(s.startTime);
+    if (!weekMap[ws]) weekMap[ws] = [];
+    weekMap[ws].push(s);
+  });
+
+  const weekKeys = Object.keys(weekMap).map(Number).sort((a,b) => b - a);
+
+  if (!weekKeys.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>Aucune séance enregistrée</div></div>';
+    return;
+  }
+
+  const getWeekNum = (ws) => {
+    if (!week1Start) return '?';
+    return Math.floor((ws - week1Start) / (7 * 86400000)) + 1;
+  };
+
+  container.innerHTML = weekKeys.map(ws => {
+    const sessions = weekMap[ws];
+    const weekNum = getWeekNum(ws);
+    const totalCal = sessions.reduce((a,s) => a + (s.calories||0), 0);
+    const d = new Date(ws);
+    const dEnd = new Date(ws + 6*86400000);
+    const fmt = (dt) => dt.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+    const dateRange = fmt(d) + ' – ' + fmt(dEnd);
+    const isCurrent = ws >= nowWeekStart;
+    const totalMins = sessions.reduce((a,s) => a + (s.duration||0), 0);
+
+    return `<div style="background:var(--surface);border:1px solid ${isCurrent?'var(--accent)':'var(--border)'};border-radius:var(--radius);padding:12px 16px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--accent)">Semaine ${weekNum}</div>
+        <div style="font-size:12px;color:var(--muted)">${dateRange}${isCurrent?' · en cours':''}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <span class="chip highlight">${sessions.length} séance${sessions.length>1?'s':''}</span>
+        ${totalCal > 0 ? `<span class="chip highlight">🔥 ${totalCal} kcal</span>` : ''}
+        ${totalMins > 0 ? `<span class="chip highlight">${fmtMins(totalMins)}</span>` : ''}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${[...new Set(sessions.map(s=>s.isExt?'🌿 '+s.sport:s.name))].map(n=>`<span class="chip">${n}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderHistory() {
-  if (histTab !== 'seances') { renderExerciseHistory(); return; }
+  if (histTab === 'exercices') { renderExerciseHistory(); return; }
+  if (histTab === 'semaine') { renderWeeklyHistoryTab(); return; }
   if (!history.length) {
     document.getElementById('historyList').innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div>Aucune séance enregistrée</div></div>';
     return;
@@ -3570,6 +3769,68 @@ function renderStats() {
 
   // Outdoor activities
   renderOutdoorStats();
+}
+
+
+function openWeeklyHistoryModal() {
+  const container = document.getElementById('weeklyHistoryModalContent');
+  if (!container) return;
+
+  // Get week number 1 = first week with a weight log entry
+  let week1Start = null;
+  if (weightLog && weightLog.length > 0) {
+    const sorted = [...weightLog].sort((a,b) => a.date - b.date);
+    week1Start = getWeekStart(sorted[0].date);
+  }
+
+  const nowWeekStart = getWeekStart(Date.now());
+  const gymHistory = history.filter(s => !s.isExt);
+
+  // Group past sessions by week (include current week)
+  const weekMap = {};
+  gymHistory.forEach(s => {
+    const ws = getWeekStart(s.startTime);
+    if (!weekMap[ws]) weekMap[ws] = [];
+    weekMap[ws].push(s);
+  });
+
+  const weekKeys = Object.keys(weekMap).map(Number).sort((a,b) => b - a);
+
+  if (!weekKeys.length) {
+    container.innerHTML = '<div class="empty-state">Aucune séance enregistrée</div>';
+    openModal('modalWeeklyHistory');
+    return;
+  }
+
+  const getWeekNum = (ws) => {
+    if (!week1Start) return '?';
+    return Math.floor((ws - week1Start) / (7 * 86400000)) + 1;
+  };
+
+  container.innerHTML = weekKeys.map(ws => {
+    const sessions = weekMap[ws];
+    const weekNum = getWeekNum(ws);
+    const totalCal = sessions.reduce((a,s) => a + (s.calories||0), 0);
+    const d = new Date(ws);
+    const dEnd = new Date(ws + 6*86400000);
+    const fmt = (dt) => dt.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+    const dateRange = fmt(d) + ' – ' + fmt(dEnd);
+    const isCurrent = ws >= nowWeekStart;
+
+    return `<div style="background:var(--surface);border:1px solid ${isCurrent?'var(--accent)':'var(--border)'};border-radius:var(--radius);padding:12px 16px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;color:var(--accent)">Semaine ${weekNum}${isCurrent?' <span style="font-size:12px;color:var(--muted)">(en cours)</span>':''}</div>
+        <div style="font-size:12px;color:var(--muted)">${dateRange}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="chip highlight">${sessions.length} séance${sessions.length>1?'s':''}</span>
+        ${totalCal > 0 ? `<span class="chip highlight">🔥 ${totalCal} kcal</span>` : ''}
+        ${[...new Set(sessions.map(s=>s.name))].map(n=>`<span class="chip">${n}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  openModal('modalWeeklyHistory');
 }
 
 function setOutdoorFilter(f) {
