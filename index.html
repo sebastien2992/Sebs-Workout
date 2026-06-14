@@ -23,7 +23,7 @@
     --accent2: #ff6b35;
     --text: #f0f0f0;
     --muted: #666;
-    --border: #2a2a2a;
+    --border: #1e1e1e;
     --danger: #ff4444;
     --success: #44ff88;
     --radius: 12px;
@@ -53,7 +53,7 @@
   .logo { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:28px; letter-spacing:-1px; color:var(--accent); }
   .logo span { color:var(--text); }
   .date-badge { font-size:12px; color:var(--muted); background:var(--surface); padding:4px 10px; border-radius:20px; font-weight:500; }
-  .tabs { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; }
+  .tabs { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; }
   .tabs::-webkit-scrollbar { display:none; }
   .tab { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; letter-spacing:0.5px; padding:10px 16px; border:none; background:transparent; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; transition:all 0.2s; text-transform:uppercase; }
   .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
@@ -62,6 +62,7 @@
   .section-title { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:32px; letter-spacing:-1px; margin-bottom:4px; }
   .section-sub { color:var(--muted); font-size:13px; margin-bottom:20px; }
   .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; transition:border-color 0.2s; }
+  .card-light { background:#1e1e1e; border:1px solid rgba(255,255,255,0.25); border-radius:var(--radius); padding:16px; margin-bottom:12px; }
   .session-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:22px; color:var(--text); }
   .session-meta { font-size:12px; color:var(--muted); margin-top:2px; }
   .session-badge { background:var(--accent); color:var(--bg); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:11px; padding:3px 8px; border-radius:4px; text-transform:uppercase; }
@@ -346,47 +347,52 @@
   <div class="section-sub" style="margin-bottom:20px">Personnalisation de l'application</div>
 
 
+  <!-- Profil personnel -->
+  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:10px;margin-top:4px">👤 Profil personnel</div>
+
   <!-- Taille -->
-  <div class="card" style="margin-bottom:16px">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:14px">📏 Ma taille</div>
-
-    <!-- Setup (première fois) -->
+  <div class="card-light" style="margin-bottom:10px">
     <div id="heightSetupCard" style="display:none">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        <div><label class="input-label">Pieds</label><input class="text-input" id="heightFt" type="number" inputmode="numeric" placeholder="5" min="1" max="9"></div>
-        <div><label class="input-label">Pouces</label><input class="text-input" id="heightIn" type="number" inputmode="numeric" placeholder="10" min="0" max="11"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <label class="input-label" style="margin:0">Taille</label>
+        <div style="display:flex;gap:6px">
+          <input class="text-input" id="heightFt" type="number" inputmode="numeric" placeholder="5'" min="1" max="9" style="width:60px;text-align:center;font-size:16px">
+          <input class="text-input" id="heightIn" type="number" inputmode="numeric" placeholder='10"' min="0" max="11" style="width:60px;text-align:center;font-size:16px">
+          <button class="btn btn-primary" onclick="saveHeight()" style="width:auto;padding:10px 12px;font-size:13px">OK</button>
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="saveHeight()">Sauvegarder</button>
     </div>
-
-    <!-- Sauvegardé -->
-    <div id="heightSavedRow" style="display:none;align-items:center;justify-content:space-between">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;color:var(--text)" id="heightDisplay">—</div>
-      <button onclick="editHeight()" class="btn btn-secondary" style="width:auto;padding:8px 16px">Modifier</button>
+    <div id="heightSavedRow" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <label class="input-label" style="margin:0">Taille</label>
+        <div onclick="editHeight()" style="cursor:pointer">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--text)" id="heightDisplay">—</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Profil personnel -->
-  <div class="card" style="margin-bottom:16px">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:14px">👤 Profil personnel</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div>
-        <label class="input-label">Âge</label>
-        <input class="text-input" id="userAgeInput" type="number" inputmode="numeric" placeholder="30" min="10" max="100" oninput="saveUserProfile()" style="font-size:18px;text-align:center">
-      </div>
-      <div>
-        <label class="input-label">Sexe</label>
-        <select class="text-input" id="userSexInput" onchange="saveUserProfile()" style="font-size:15px">
-          <option value="m">Homme</option>
-          <option value="f">Femme</option>
-        </select>
-      </div>
+  <!-- Âge -->
+  <div class="card-light" style="margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <label class="input-label" style="margin:0">Âge</label>
+      <input class="text-input" id="userAgeInput" type="number" inputmode="numeric" placeholder="30" min="10" max="100" oninput="saveUserProfile()" style="width:90px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--text);text-align:right;border:none;background:transparent;padding:0;">
     </div>
-    <div style="font-size:12px;color:var(--muted)">Utilisé pour calculer la masse grasse estimée</div>
+  </div>
+
+  <!-- Sexe -->
+  <div class="card-light" style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <label class="input-label" style="margin:0">Sexe</label>
+      <select class="text-input" id="userSexInput" onchange="saveUserProfile()" style="width:140px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--text);text-align:right;border:none;background:transparent;padding:0;">
+        <option value="m">Homme</option>
+        <option value="f">Femme</option>
+      </select>
+    </div>
   </div>
 
   <!-- Thème couleurs -->
-  <div class="card" style="margin-bottom:16px">
+  <div class="card-light" style="margin-bottom:16px">
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:14px">🎨 Thème</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <button onclick="setTheme('dark')" id="themeDarkBtn" style="padding:16px;border-radius:12px;border:2px solid var(--accent);background:#0a0a0a;cursor:pointer;text-align:center">
@@ -403,7 +409,7 @@
   </div>
 
   <!-- Données -->
-  <div class="card" style="margin-bottom:16px">
+  <div class="card-light" style="margin-bottom:16px">
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:14px">💾 Données</div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <button onclick="exportData()" class="btn btn-primary" style="font-size:15px">⬇ Exporter mes données</button>
@@ -413,7 +419,7 @@
   </div>
 
   <!-- Suppression ciblée -->
-  <div class="card" style="margin-bottom:16px">
+  <div class="card-light" style="margin-bottom:16px">
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:14px">🗑 Suppression</div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <button onclick="deleteAllSessions()" class="btn" style="font-size:15px;background:transparent;border:1px solid var(--danger);color:var(--danger)">Supprimer toutes les séances</button>
@@ -433,7 +439,7 @@
 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
 
   <!-- IMC -->
-  <div class="card" id="imcCard" style="display:none;margin-bottom:16px;border:2px solid var(--accent)">
+  <div class="card-light" id="imcCard" style="display:none;margin-bottom:16px;border:1px solid rgba(255,255,255,0.25);background:#1e1e1e">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div>
         <div style="font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">IMC</div>
@@ -465,7 +471,7 @@
   </div>
 
   <!-- Masse grasse -->
-  <div class="card" id="bodyFatCard" style="display:none;margin-bottom:16px;border:2px solid var(--accent)">
+  <div class="card-light" id="bodyFatCard" style="display:none;margin-bottom:16px;border:1px solid rgba(255,255,255,0.25);background:#1e1e1e">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div>
         <div style="font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Masse grasse estimée</div>
@@ -477,16 +483,26 @@
         <div style="font-size:11px;color:var(--muted);margin-top:4px" id="bodyFatFormula">—</div>
       </div>
     </div>
-    <div style="background:var(--surface2);border-radius:6px;height:6px;margin-bottom:6px;overflow:hidden">
-      <div id="bodyFatBar" style="height:100%;background:var(--accent);border-radius:6px;transition:width 0.5s;width:0%"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
-      <span>Athlète</span><span>Fitness</span><span>Moyen</span><span>Obèse</span>
+    <div style="margin-top:14px">
+      <!-- Barre colorée -->
+      <div style="display:flex;border-radius:6px;overflow:hidden;height:8px;margin-bottom:4px">
+        <div style="flex:1;background:#4fc3f7"></div>
+        <div style="flex:1;background:#66bb6a"></div>
+        <div style="flex:1;background:#a5d6a7"></div>
+        <div style="flex:1;background:#ffa726"></div>
+        <div style="flex:1;background:#ef5350"></div>
+      </div>
+      <div id="bodyFatScaleLabels" style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted)">
+        <span>Athlète</span><span>Fitness</span><span>Accept.</span><span>Moyen</span><span>Obèse</span>
+      </div>
+      <div style="margin-top:6px;position:relative;height:12px">
+        <div id="bodyFatArrow" style="position:absolute;top:0;transform:translateX(-50%);font-size:12px;transition:left 0.5s;left:0%">▲</div>
+      </div>
     </div>
   </div>
 
   <!-- Graphique poids -->
-  <div class="card" id="weightChartCard" style="display:none;margin-bottom:16px;padding:14px 10px;border:2px solid var(--accent)">
+  <div class="card-light" id="weightChartCard" style="display:none;margin-bottom:16px;padding:14px 10px;border:1px solid rgba(255,255,255,0.25);background:#1e1e1e">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 4px">
       <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px">Évolution du poids</div>
       <div style="display:flex;gap:4px">
@@ -500,7 +516,7 @@
   </div>
 
   <!-- Saisie poids -->
-  <div class="card" style="margin-bottom:16px;border:2px solid var(--accent)">
+  <div class="card-light" style="margin-bottom:16px;border:1px solid rgba(255,255,255,0.25)">
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:12px">Enregistrer mon poids</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
       <div>
@@ -600,12 +616,12 @@
     <div class="stat-box"><div class="stat-num" id="statLower">0</div><div class="stat-label">Bas</div><div style="font-size:10px;color:var(--muted);margin-top:2px">cette semaine</div></div>
     <div class="stat-box"><div class="stat-num" id="statCardio">0</div><div class="stat-label">Cardio</div><div style="font-size:10px;color:var(--muted);margin-top:2px">cette semaine</div></div>
   </div>
-  <div class="card">
+  <div class="card-light">
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:2px">Muscles travaillés</div><div style="font-size:12px;color:var(--muted);margin-bottom:10px">Cette semaine</div>
     <div id="muscleStats"></div>
   </div>
   <!-- Outdoor stats -->
-  <div id="outdoorStatsSection" data-filter="week" class="card" style="margin-bottom:16px"></div>
+  <div id="outdoorStatsSection" data-filter="week" class="card-light" style="margin-bottom:16px"></div>
 
   <!-- Weekly history -->
   <div id="weeklyHistorySection" style="margin-top:8px"></div>
@@ -1676,7 +1692,6 @@ function showPage(id, tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   tab.classList.add('active');
-  tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   if(id==='library') renderLibrary();
   if(id==='history') renderHistory();
   if(id==='stats') renderStats();
@@ -2056,7 +2071,7 @@ function openExerciseDetail(id, fromSession=false) {
 
   const videoHtml = ex.video
     ? `<div class="video-section-title">▶ Vidéo démonstration</div>
-       <a href="https://www.youtube.com/watch?v=${ex.video}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:10px;padding:14px 16px;text-decoration:none;margin-bottom:16px;transition:border-color 0.2s" onmouseenter="this.style.borderColor='#e8ff47'" onmouseleave="this.style.borderColor='#2a2a2a'">
+       <a href="https://www.youtube.com/watch?v=${ex.video}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;background:#1e1e1e;border:1px solid #1e1e1e;border-radius:10px;padding:14px 16px;text-decoration:none;margin-bottom:16px;transition:border-color 0.2s" onmouseenter="this.style.borderColor='#e8ff47'" onmouseleave="this.style.borderColor='#1e1e1e'">
          <div style="background:#ff0000;border-radius:8px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
          </div>
@@ -4132,7 +4147,7 @@ function renderProfil() {
     document.getElementById('heightIn').value = inches;
     document.getElementById('heightDisplay').textContent = ft + "\' " + inches + "\"";
     document.getElementById('heightSetupCard').style.display = 'none';
-    document.getElementById('heightSavedRow').style.display = 'flex';
+    document.getElementById('heightSavedRow').style.display = 'block';
   } else {
     document.getElementById('heightSetupCard').style.display = 'block';
     document.getElementById('heightSavedRow').style.display = 'none';
@@ -4168,8 +4183,14 @@ function renderProfil() {
         document.getElementById('bodyFatLabel').textContent = bfInfo.label;
         document.getElementById('bodyFatFormula').textContent = userAge + ' ans · ' + (userSex==='m'?'Homme':'Femme');
         const maxBF = userSex==='m' ? 40 : 50;
-        document.getElementById('bodyFatBar').style.width = Math.min(100, (bf/maxBF)*100) + '%';
-        document.getElementById('bodyFatBar').style.background = bfInfo.color;
+        document.getElementById('bodyFatBar') && (document.getElementById('bodyFatBar').style.width = Math.min(100, (bf/maxBF)*100) + '%');
+        document.getElementById('bodyFatBar') && (document.getElementById('bodyFatBar').style.background = bfInfo.color);
+        // Position arrow on graduation bar
+        // Ranges for men: 0-6 athlete, 6-14 fitness, 14-18 acceptable, 18-25 avg, 25+ obese (max 40)
+        // Ranges for women: 0-14, 14-21, 21-25, 25-32, 32+ (max 50)
+        const pct = Math.min(98, Math.max(2, (bf / maxBF) * 100));
+        const arrow = document.getElementById('bodyFatArrow');
+        if (arrow) { arrow.style.left = pct + '%'; arrow.style.color = bfInfo.color; }
       } else {
         bfCard.style.display = 'none';
       }
@@ -4927,9 +4948,15 @@ setTimeout(function() {
   document.addEventListener('touchstart', function(e) {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
+    // Check if touch starts on the tabs bar — if so, ignore swipe
+    const tabsEl = document.querySelector('.tabs');
+    if (tabsEl && tabsEl.contains(e.target)) {
+      startX = null; // disable swipe
+    }
   }, { passive: true });
 
   document.addEventListener('touchend', function(e) {
+    if (startX === null) return; // touch started on tabs bar
     if (document.querySelector('.modal-overlay.open')) return;
     const dx = e.changedTouches[0].clientX - startX;
     const dy = e.changedTouches[0].clientY - startY;
