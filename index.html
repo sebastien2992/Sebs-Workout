@@ -15,6 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
+    --theme: dark;
     --bg: #0a0a0a;
     --surface: #141414;
     --surface2: #1e1e1e;
@@ -186,6 +187,28 @@
   .ex-card-img svg { width:100%; height:100%; display:block; }
   .ex-card-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; padding:6px 8px 2px; line-height:1.2; }
   .ex-card-meta { font-size:10px; color:var(--muted); padding:0 8px 8px; }
+
+  [data-theme="light"] {
+    --bg: #f5f5f5;
+    --surface: #ffffff;
+    --surface2: #ebebeb;
+    --border: #dddddd;
+    --text: #111111;
+    --muted: #666666;
+    --accent: #c8d400;
+    --accent2: #d45f00;
+    --danger: #cc2200;
+  }
+  [data-theme="light"] body {
+    background: var(--bg);
+    color: var(--text);
+  }
+  [data-theme="light"] .logo { color: #111; }
+  [data-theme="light"] .logo span { color: #444; }
+  [data-theme="light"] header { background: var(--bg); border-color: var(--border); }
+  [data-theme="light"] .tab { color: #888; }
+  [data-theme="light"] .tab.active { color: var(--accent); }
+
 </style>
 </head>
 <body style="background:#0a0a0a;margin:0">
@@ -202,6 +225,7 @@
     <button class="tab" onclick="showPage('history',this)">Historique</button>
     <button class="tab" onclick="showPage('stats',this)">Stats</button>
     <button class="tab" onclick="showPage('profil',this)">Profil</button>
+    <button class="tab" onclick="showPage('prefs',this)">Préférences</button>
   </div>
 </header>
 
@@ -315,47 +339,98 @@
   <div id="historyList"></div>
 </div>
 
+
+<!-- PRÉFÉRENCES -->
+<div id="page-prefs" class="page">
+  <div class="section-title">Préférences</div>
+  <div class="section-sub" style="margin-bottom:20px">Personnalisation de l'application</div>
+
+
+  <!-- Taille -->
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:14px">📏 Ma taille</div>
+
+    <!-- Setup (première fois) -->
+    <div id="heightSetupCard" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div><label class="input-label">Pieds</label><input class="text-input" id="heightFt" type="number" inputmode="numeric" placeholder="5" min="1" max="9"></div>
+        <div><label class="input-label">Pouces</label><input class="text-input" id="heightIn" type="number" inputmode="numeric" placeholder="10" min="0" max="11"></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveHeight()">Sauvegarder</button>
+    </div>
+
+    <!-- Sauvegardé -->
+    <div id="heightSavedRow" style="display:none;align-items:center;justify-content:space-between">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;color:var(--text)" id="heightDisplay">—</div>
+      <button onclick="editHeight()" class="btn btn-secondary" style="width:auto;padding:8px 16px">Modifier</button>
+    </div>
+  </div>
+
+  <!-- Profil personnel -->
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:14px">👤 Profil personnel</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div>
+        <label class="input-label">Âge</label>
+        <input class="text-input" id="userAgeInput" type="number" inputmode="numeric" placeholder="30" min="10" max="100" oninput="saveUserProfile()" style="font-size:18px;text-align:center">
+      </div>
+      <div>
+        <label class="input-label">Sexe</label>
+        <select class="text-input" id="userSexInput" onchange="saveUserProfile()" style="font-size:15px">
+          <option value="m">Homme</option>
+          <option value="f">Femme</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted)">Utilisé pour calculer la masse grasse estimée</div>
+  </div>
+
+  <!-- Thème couleurs -->
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:14px">🎨 Thème</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <button onclick="setTheme('dark')" id="themeDarkBtn" style="padding:16px;border-radius:12px;border:2px solid var(--accent);background:#0a0a0a;cursor:pointer;text-align:center">
+        <div style="width:40px;height:40px;background:#0a0a0a;border-radius:8px;margin:0 auto 8px;border:1px solid #333"></div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:#f0f0f0">Noir</div>
+        <div style="font-size:12px;color:#666;margin-top:2px">Thème sombre</div>
+      </button>
+      <button onclick="setTheme('light')" id="themeLightBtn" style="padding:16px;border-radius:12px;border:2px solid transparent;background:#f5f5f5;cursor:pointer;text-align:center">
+        <div style="width:40px;height:40px;background:#ffffff;border-radius:8px;margin:0 auto 8px;border:1px solid #ddd"></div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:#111">Blanc</div>
+        <div style="font-size:12px;color:#888;margin-top:2px">Thème clair</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Données -->
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:14px">💾 Données</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="exportData()" class="btn btn-primary" style="font-size:15px">⬇ Exporter mes données</button>
+      <button onclick="document.getElementById('importFile').click()" class="btn btn-secondary" style="font-size:15px;border:1px solid #ffffff">⬆ Importer des données</button>
+      <button onclick="openResetModal()" class="btn" style="font-size:15px;background:transparent;border:1px solid var(--danger);color:var(--danger)">🗑 Réinitialiser toutes les données</button>
+    </div>
+  </div>
+
+  <!-- Suppression ciblée -->
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:14px">🗑 Suppression</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="deleteAllSessions()" class="btn" style="font-size:15px;background:transparent;border:1px solid var(--danger);color:var(--danger)">Supprimer toutes les séances</button>
+      <button onclick="deleteAllExerciseHistory()" class="btn" style="font-size:15px;background:transparent;border:1px solid var(--danger);color:var(--danger)">Supprimer l'historique des exercices</button>
+    </div>
+  </div>
+</div>
+
 <!-- PROFIL -->
 <div id="page-profil" class="page">
 
-  <!-- Header with buttons and height inline -->
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-    <div style="flex:1;margin-right:10px;display:flex;flex-direction:column;justify-content:flex-end;align-self:stretch">
-
-      <!-- Taille setup (première fois) -->
-      <div id="heightSetupCard" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:auto">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-          <div><label class="input-label">Pieds</label><input class="text-input" id="heightFt" type="number" inputmode="numeric" placeholder="5" min="1" max="9"></div>
-          <div><label class="input-label">Pouces</label><input class="text-input" id="heightIn" type="number" inputmode="numeric" placeholder="10" min="0" max="11"></div>
-        </div>
-        <button class="btn btn-primary" onclick="saveHeight()" style="font-size:13px;padding:8px">Sauvegarder</button>
-      </div>
-
-      <!-- Taille sauvegardée -->
-      <div id="heightSavedRow" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-top:auto;display:inline-flex;flex-direction:column;max-width:180px">
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:1px;margin-bottom:4px">Ma taille</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px">
-          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--text);line-height:1;white-space:nowrap" id="heightDisplay">—</div>
-          <button onclick="editHeight()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;padding:5px 12px;cursor:pointer;font-weight:600;white-space:nowrap">Modifier</button>
-        </div>
-      </div>
-
-      <!-- Titre en haut -->
-      <div class="section-title" style="margin-bottom:2px;order:-1">Profil</div>
-      <div class="section-sub" style="margin-bottom:8px;order:-1">Poids corporel &amp; IMC</div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:6px;padding-top:2px">
-      <button onclick="exportData()" style="background:var(--accent);border:none;border-radius:8px;color:var(--bg);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">⬇ Exporter</button>
-      <button onclick="document.getElementById('importFile').click()" style="background:var(--surface);border:1px solid #ffffff;border-radius:8px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">⬆ Importer</button>
-      <button onclick="openResetModal()" style="background:transparent;border:1px solid var(--danger);border-radius:8px;color:var(--danger);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;white-space:nowrap">🗑 Reset</button>
-      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-    </div>
+  <div style="margin-bottom:12px">
+    <div class="section-title" style="margin-bottom:2px">Profil</div>
+    <div class="section-sub">Poids corporel &amp; IMC</div>
   </div>
-  <div style="margin-bottom:0"></div>
 
-  <!-- Taille (une seule fois) -- REMOVED, now inline above -->
-  <!-- Taille sauvegardée -- REMOVED, now inline above -->
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
 
   <!-- IMC -->
   <div class="card" id="imcCard" style="display:none;margin-bottom:16px;border:2px solid var(--accent)">
@@ -386,6 +461,27 @@
       <div style="margin-top:6px;position:relative;height:12px">
         <div id="imcArrow" style="position:absolute;top:0;transform:translateX(-50%);font-size:12px;transition:left 0.5s">▲</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Masse grasse -->
+  <div class="card" id="bodyFatCard" style="display:none;margin-bottom:16px;border:2px solid var(--accent)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div>
+        <div style="font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Masse grasse estimée</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;line-height:1" id="bodyFatValue">—</div>
+        <div style="font-size:13px;margin-top:4px" id="bodyFatLabel">—</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--muted)">Formule BMI</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px" id="bodyFatFormula">—</div>
+      </div>
+    </div>
+    <div style="background:var(--surface2);border-radius:6px;height:6px;margin-bottom:6px;overflow:hidden">
+      <div id="bodyFatBar" style="height:100%;background:var(--accent);border-radius:6px;transition:width 0.5s;width:0%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
+      <span>Athlète</span><span>Fitness</span><span>Moyen</span><span>Obèse</span>
     </div>
   </div>
 
@@ -1586,6 +1682,7 @@ function showPage(id, tab) {
   if(id==='stats') renderStats();
   if(id==='programmes') renderProgrammes();
   if(id==='profil') renderProfil();
+  if(id==='prefs') renderPrefs();
 }
 
 // ─── SESSION ─────────────────────────────────────
@@ -3930,6 +4027,95 @@ function getEntryImc(e) {
   return '<div style="font-size:11px;font-weight:600;color:' + info.color + '">IMC ' + imc + '</div>';
 }
 
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : '');
+  localStorage.setItem('app_theme', theme);
+  // Update button borders
+  const darkBtn = document.getElementById('themeDarkBtn');
+  const lightBtn = document.getElementById('themeLightBtn');
+  if (darkBtn) darkBtn.style.borderColor = theme === 'dark' ? 'var(--accent)' : 'transparent';
+  if (lightBtn) lightBtn.style.borderColor = theme === 'light' ? '#c8d400' : 'transparent';
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem('app_theme') || 'dark';
+  setTheme(saved);
+}
+
+
+function deleteAllSessions() {
+  if (!confirm('Supprimer toutes les séances ? Cette action est irréversible.')) return;
+  history = [];
+  save(STORAGE_KEYS.history, history);
+  showToast('Toutes les séances supprimées');
+  renderHistory();
+}
+
+function deleteAllExerciseHistory() {
+  if (!confirm('Supprimer l\'historique de tous les exercices ? Cette action est irréversible.')) return;
+  // Exercise history is derived from session history — clearing sessions clears it
+  // But we only want to clear the derived history, not the sessions
+  // We remove the done sets from all exercises in all sessions
+  history.forEach(s => {
+    if (s.exercises) s.exercises.forEach(e => {
+      if (e.sets) e.sets.forEach(s2 => { s2.done = false; });
+    });
+  });
+  save(STORAGE_KEYS.history, history);
+  showToast('Historique des exercices supprimé');
+}
+
+function renderPrefs() {
+  renderProfil(); // refresh height display
+  // Load age/sex
+  const ageInput = document.getElementById('userAgeInput');
+  const sexInput = document.getElementById('userSexInput');
+  if (ageInput && userAge) ageInput.value = userAge;
+  if (sexInput && userSex) sexInput.value = userSex;
+  const saved = localStorage.getItem('app_theme') || 'dark';
+  const darkBtn = document.getElementById('themeDarkBtn');
+  const lightBtn = document.getElementById('themeLightBtn');
+  if (darkBtn) darkBtn.style.borderColor = saved === 'dark' ? 'var(--accent)' : 'transparent';
+  if (lightBtn) lightBtn.style.borderColor = saved === 'light' ? '#c8d400' : 'transparent';
+}
+
+
+let userAge = parseInt(load('il_userAge')) || null;
+let userSex = load('il_userSex') || 'm';
+
+function saveUserProfile() {
+  const age = parseInt(document.getElementById('userAgeInput')?.value);
+  const sex = document.getElementById('userSexInput')?.value;
+  if (age && age > 0) { userAge = age; save('il_userAge', age); }
+  if (sex) { userSex = sex; save('il_userSex', sex); }
+  renderProfil();
+}
+
+function calcBodyFat(imc, age, sex) {
+  // Formule Deurenberg (BMI-based)
+  // BF% = (1.20 × BMI) + (0.23 × age) - (10.8 × sex) - 5.4
+  // sex: 1=homme, 0=femme
+  const s = sex === 'm' ? 1 : 0;
+  return (1.20 * imc) + (0.23 * age) - (10.8 * s) - 5.4;
+}
+
+function getBodyFatLabel(bf, sex) {
+  if (sex === 'm') {
+    if (bf < 6)  return { label: 'Athlète', color: '#4fc3f7' };
+    if (bf < 14) return { label: 'Fitness', color: '#66bb6a' };
+    if (bf < 18) return { label: 'Acceptable', color: '#a5d6a7' };
+    if (bf < 25) return { label: 'Moyen', color: '#ffa726' };
+    return { label: 'Obèse', color: '#ef5350' };
+  } else {
+    if (bf < 14) return { label: 'Athlète', color: '#4fc3f7' };
+    if (bf < 21) return { label: 'Fitness', color: '#66bb6a' };
+    if (bf < 25) return { label: 'Acceptable', color: '#a5d6a7' };
+    if (bf < 32) return { label: 'Moyen', color: '#ffa726' };
+    return { label: 'Obèse', color: '#ef5350' };
+  }
+}
+
 function renderProfil() {
   // Restore height input if saved
   // Set today as default date for weight input
@@ -3970,6 +4156,24 @@ function renderProfil() {
     document.getElementById('imcValue').textContent = imc.toFixed(1);
     document.getElementById('imcValue').style.color = info.color;
     document.getElementById('imcLabel').textContent = info.label;
+    // Body fat
+    const bfCard = document.getElementById('bodyFatCard');
+    if (bfCard) {
+      if (userAge && userSex) {
+        const bf = calcBodyFat(imc, userAge, userSex);
+        const bfInfo = getBodyFatLabel(bf, userSex);
+        bfCard.style.display = 'block';
+        document.getElementById('bodyFatValue').textContent = bf.toFixed(1) + '%';
+        document.getElementById('bodyFatValue').style.color = bfInfo.color;
+        document.getElementById('bodyFatLabel').textContent = bfInfo.label;
+        document.getElementById('bodyFatFormula').textContent = userAge + ' ans · ' + (userSex==='m'?'Homme':'Femme');
+        const maxBF = userSex==='m' ? 40 : 50;
+        document.getElementById('bodyFatBar').style.width = Math.min(100, (bf/maxBF)*100) + '%';
+        document.getElementById('bodyFatBar').style.background = bfInfo.color;
+      } else {
+        bfCard.style.display = 'none';
+      }
+    }
     document.getElementById('imcLabel').style.color = info.color;
     // Arrow position (imc 16-40 mapped to 0-100%)
     const pct = Math.max(0, Math.min(100, (imc - 16) / (40 - 16) * 100));
@@ -4658,6 +4862,7 @@ async function initApp() {
   const storedProg = load('il_programmes');
   programmes = (storedProg && storedProg.length > 0) ? storedProg : getDefaultProgrammes();
   renderSession();
+  loadTheme();
   if (typeof renderProfil === 'function') renderProfil();
 
 }
@@ -4716,7 +4921,7 @@ setTimeout(function() {
 <script>
 // ─── SWIPE NAVIGATION ────────────────────────────────────────────────────
 (function() {
-  const tabs = ['today','library','programmes','history','stats','profil'];
+  const tabs = ['today','library','programmes','history','stats','profil','prefs'];
   let startX = 0, startY = 0;
 
   document.addEventListener('touchstart', function(e) {
