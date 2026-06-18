@@ -1049,6 +1049,40 @@
   </div>
 </div>
 
+
+<!-- MODAL: Modifier séance historique -->
+<div class="modal-overlay" id="modalEditHistSession">
+  <div class="modal">
+    <div class="modal-title">Modifier la séance</div>
+
+    <div style="margin-bottom:14px">
+      <label class="input-label">Date</label>
+      <input type="date" id="editHistDate" class="text-input" style="color-scheme:dark">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div>
+        <label class="input-label">Heures</label>
+        <input class="text-input" id="editHistHours" type="number" inputmode="numeric" min="0" style="text-align:center;font-size:18px">
+      </div>
+      <div>
+        <label class="input-label">Minutes</label>
+        <input class="text-input" id="editHistMins" type="number" inputmode="numeric" min="0" max="59" style="text-align:center;font-size:18px">
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label class="input-label">🔥 Calories</label>
+      <input class="text-input" id="editHistCal" type="number" inputmode="numeric" style="text-align:center;font-size:18px">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal('modalEditHistSession');openHistoryDetail(currentHistoryIndex)">Annuler</button>
+      <button class="btn btn-primary" onclick="saveEditHistSession()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2547,8 +2581,42 @@ function addFSFromHist(idx) {
 }
 
 function editHistorySession() {
-  // TODO: Open edit modal for history session
-  showToast('Fonctionnalité à venir');
+  const s = history[currentHistoryIndex];
+  if (!s) return;
+  const d = new Date(s.startTime);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  document.getElementById('editHistDate').value = `${yyyy}-${mm}-${dd}`;
+  const totalMins = s.duration || 0;
+  document.getElementById('editHistHours').value = Math.floor(totalMins/60);
+  document.getElementById('editHistMins').value = totalMins%60;
+  document.getElementById('editHistCal').value = s.calories || '';
+  closeModal('modalHistoryDetail');
+  openModal('modalEditHistSession');
+}
+
+function saveEditHistSession() {
+  const s = history[currentHistoryIndex];
+  if (!s) return;
+  const dateVal = document.getElementById('editHistDate').value;
+  const h = parseInt(document.getElementById('editHistHours').value) || 0;
+  const m = parseInt(document.getElementById('editHistMins').value) || 0;
+  const cal = parseInt(document.getElementById('editHistCal').value) || 0;
+
+  if (dateVal) {
+    const [y,mo,d2] = dateVal.split('-').map(Number);
+    const newDate = new Date(s.startTime);
+    newDate.setFullYear(y, mo-1, d2);
+    s.startTime = newDate.getTime();
+  }
+  s.duration = h*60 + m;
+  s.calories = cal;
+
+  save(STORAGE_KEYS.history, history);
+  closeModal('modalEditHistSession');
+  renderHistory();
+  showToast('Séance modifiée ✓');
 }
 
 function openAddExercise() {
