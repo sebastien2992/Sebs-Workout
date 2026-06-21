@@ -3689,19 +3689,33 @@ function renderWeeklyHistoryTab() {
     const isCurrent = ws >= nowWeekStart;
     const totalMins = sessions.reduce((a,s) => a + (s.duration||0), 0);
 
+    // Sessions list inside
+    const sessionList = sessions.sort((a,b)=>b.startTime-a.startTime).map((s,i) => {
+      const sd = new Date(s.startTime).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+      const histIdx = history.indexOf(s);
+      return `<div onclick="event.stopPropagation();openHistoryDetail(${histIdx})" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,0.07);cursor:pointer">
+        <div>
+          <div style="font-size:12px;color:var(--muted)">${sd}</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px">${s.isExt?'🌿 '+s.sport:s.name}</div>
+        </div>
+        <div style="text-align:right">
+          ${s.calories?`<div style="font-size:13px;color:var(--accent)">🔥 ${s.calories} kcal</div>`:''}
+          <div style="font-size:12px;color:var(--muted)">${fmtMins(s.duration||0)}</div>
+        </div>
+      </div>`;
+    }).join('');
+
     return `<div style="background:var(--surface);border:1px solid ${isCurrent?'var(--accent)':'var(--border)'};border-radius:var(--radius);padding:12px 16px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--accent)">Semaine ${weekNum}</div>
         <div style="font-size:12px;color:var(--muted)">${dateRange}${isCurrent?' · en cours':''}</div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
         <span class="chip highlight">${sessions.length} séance${sessions.length>1?'s':''}</span>
         ${totalCal > 0 ? `<span class="chip highlight">🔥 ${totalCal} kcal</span>` : ''}
         ${totalMins > 0 ? `<span class="chip highlight">${fmtMins(totalMins)}</span>` : ''}
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        ${[...new Set(sessions.map(s=>s.isExt?'🌿 '+s.sport:s.name))].map(n=>`<span class="chip">${n}</span>`).join('')}
-      </div>
+      ${sessionList}
     </div>`;
   }).join('');
 }
