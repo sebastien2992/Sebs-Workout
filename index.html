@@ -3993,14 +3993,16 @@ function renderStats() {
 
   const weekCal = Math.round(weekSessions.reduce((a,s)=>a+(s.calories||0),0));
   const calEl = document.getElementById('statCalWeek'); if(calEl) calEl.textContent = weekCal > 0 ? weekCal+' kcal' : '—';
+  const allMuscles = ['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Abdominaux','Cardio'];
   const mc={};
-  weekSessions.forEach(s=>s.exercises.forEach(e=>{mc[e.muscle]=(mc[e.muscle]||0)+e.sets.filter(x=>x.done).length;}));
+  allMuscles.forEach(m => mc[m] = 0);
+  weekGymSessions.forEach(s=>s.exercises.forEach(e=>{if(e.muscle) mc[e.muscle]=(mc[e.muscle]||0)+e.sets.filter(x=>x.done).length;}));
   const mx=Math.max(...Object.values(mc),1);
-  document.getElementById('muscleStats').innerHTML=Object.entries(mc).sort((a,b)=>b[1]-a[1]).map(([m,c])=>`
+  document.getElementById('muscleStats').innerHTML=allMuscles.map(m=>{const c=mc[m]||0; return `
     <div style="margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>${m}</span><span style="color:var(--muted)">${c} séries</span></div>
-      <div style="background:var(--surface2);border-radius:4px;height:4px"><div style="background:var(--accent);height:100%;border-radius:4px;width:${Math.round(c/mx*100)}%;transition:width 0.5s"></div></div>
-    </div>`).join('')||'<div style="color:var(--muted);font-size:13px">Aucune donnée</div>';
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span style="color:${c>0?'var(--text)':'var(--muted)'}">${m}</span><span style="color:var(--muted)">${c>0?c+' séries':'—'}</span></div>
+      <div style="background:var(--surface2);border-radius:4px;height:4px"><div style="background:${c>0?'var(--accent)':'var(--surface2)'};height:100%;border-radius:4px;width:${Math.round(c/mx*100)}%;transition:width 0.5s"></div></div>
+    </div>`;}).join('');
 
   // Outdoor activities
   renderOutdoorStats();
