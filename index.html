@@ -3379,14 +3379,13 @@ function setHistTab(tab) {
 }
 
 function getExerciseHistory() {
-  // Build per-exercise history from session history
-  // Each exercise keeps only the latest performance (last session wins)
   const exMap = {};
   // Process oldest first so newest overwrites
   const sorted = [...history].sort((a,b) => a.startTime - b.startTime);
   sorted.forEach(session => {
     session.exercises.forEach(ex => {
-      const key = ex.id || ex.name;
+      // Key by name (lowercase) to catch same exercise with different ids
+      const key = (ex.name || '').toLowerCase().trim();
       exMap[key] = {
         id: ex.id,
         name: ex.name,
@@ -3813,38 +3812,82 @@ function openHistoryDetail(idx) {
     </div>`;
   }).filter(Boolean).join('');
 
+  // Build same summary as end-of-session screen
+  const strengthExs = s.exercises.filter(e => e.type !== 'Cardio' && e.sets.some(x=>x.done));
+  const cardioExs = s.exercises.filter(e => {
+    if (e.type !== 'Cardio') return false;
+    if (e.isBike) { const st=e.sets[0]||{}; return (parseFloat(st.km)||0)>0||(parseInt(st.mins)||0)>0||(parseInt(st.hours)||0)>0; }
+    return e.sets.some(x=>x.done);
+  });
+  const strengthCal = Math.round(strengthExs.reduce((a,e)=>a+calcExCalories(e),0));
+  const cardioCal   = Math.round(cardioExs.reduce((a,e)=>a+(e.calories?parseFloat(e.calories):calcExCalories(e)),0));
+  const cardioMins2 = Math.round(cardioExs.reduce((a,e)=>{ if(e.isBike){const st=e.sets[0]||{};return a+(parseInt(st.hours)||0)*60+(parseInt(st.mins)||0);}return a+e.sets.filter(x=>x.done).reduce((b,x)=>b+(parseFloat(x.minutes)||0),0);},0));
+  const totalCal2   = s.calories || (strengthCal + cardioCal);
+
+  let summaryHtml = '';
+
+  if (strengthExs.length) {
+    const strengthSecs = strengthExs.reduce((a,e)=>a+(e.elapsedSecs||0),0);
+    const strengthMins2 = Math.round(strengthSecs/60);
+    const strengthRows = strengthExs.map(e=>{
+      const mins = Math.round((e.elapsedSecs||0)/60);
+      const cal = Math.round(calcExCalories(e));
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span style="font-size:14px;flex:1">${e.name}</span>
+        <span style="font-size:13px;color:var(--muted);margin-right:12px">${mins>0?mins+'min':''}</span>
+        <span style="font-size:13px;color:var(--accent);white-space:nowrap">🔥 ${cal} kcal</span>
+      </div>`;
+    }).join('');
+    summaryHtml += `<div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">💪 Musculation</div>
+      ${strengthRows}
+      <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1)">
+        <span style="font-size:13px;color:var(--muted)">Total</span>
+        <span style="font-size:13px;color:var(--muted)">${fmtMins(strengthMins2)}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--accent)">🔥 ${strengthCal} kcal</span>
+      </div>
+    </div>`;
+  }
+
+  if (cardioExs.length) {
+    const cardioRows = cardioExs.map(e=>{
+      let mins; if(e.isBike){const st=e.sets[0]||{};mins=(parseInt(st.hours)||0)*60+(parseInt(st.mins)||0);}else{mins=Math.round(e.sets.filter(x=>x.done).reduce((a,x)=>a+(parseFloat(x.minutes)||0),0));}
+      const cal = e.calories ? Math.round(e.calories) : Math.round(calcExCalories(e));
+      const hh=Math.floor(mins/60),mm=mins%60;
+      const timeStr = mins>0?(hh>0?hh+'h '+mm+'min':mm+' min'):'';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span style="font-size:14px;flex:1">${e.name}</span>
+        <span style="font-size:13px;color:var(--muted);margin-right:12px">${timeStr}</span>
+        <span style="font-size:13px;color:var(--accent2);white-space:nowrap">🔥 ${cal} kcal</span>
+      </div>`;
+    }).join('');
+    summaryHtml += `<div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--accent2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">🏃 Cardio</div>
+      ${cardioRows}
+      <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1)">
+        <span style="font-size:13px;color:var(--muted)">Total</span>
+        <span style="font-size:13px;color:var(--muted)">${cardioMins2} min</span>
+        <span style="font-size:13px;font-weight:700;color:var(--accent2)">🔥 ${cardioCal} kcal</span>
+      </div>
+    </div>`;
+  }
+
+  summaryHtml += `<div style="background:rgba(232,255,71,0.07);border:1px solid rgba(232,255,71,0.25);border-radius:10px;padding:12px 14px">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Total</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+      <span style="font-size:14px;color:var(--muted)">Durée</span>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--accent)">${fmtMins(s.duration||0)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 0">
+      <span style="font-size:14px;color:var(--muted)">Calories totales</span>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:var(--accent)">🔥 ${totalCal2} kcal</span>
+    </div>
+  </div>`;
+
   document.getElementById('historyDetailContent').innerHTML = `
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px;margin-bottom:2px">${s.name}</div>
-    <div style="font-size:14px;color:var(--muted);margin-bottom:10px">${dateStr}</div>
-
-    ${/* Ligne 1: nb exercices + calories */ ''}
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-      <span class="chip highlight">${s.exercises.length} exercice${s.exercises.length>1?'s':''}</span>
-      ${s.calories ? `<span class="chip highlight">🔥 ${s.calories} kcal</span>` : ''}
-    </div>
-
-    ${/* Ligne 2: temps total + muscu + cardio */ ''}
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-      <span class="chip highlight">${fmtMins(s.duration||0)} total</span>
-      ${(()=>{
-        const strengthSecs = (s.exercises||[]).filter(e=>e.type!=='Cardio').reduce((a,e)=>a+(e.elapsedSecs||0),0);
-        const cardioMins = (s.exercises||[]).filter(e=>e.type==='Cardio').reduce((a,e)=>{
-          if(e.isBike){const st=e.sets[0]||{};return a+(parseInt(st.hours)||0)*60+(parseInt(st.mins)||0);}
-          return a+e.sets.filter(s=>s.done).reduce((b,s)=>b+(parseFloat(s.minutes)||0),0);
-        },0);
-        let parts=[];
-        if(strengthSecs>30) parts.push('💪 '+fmtMins(Math.round(strengthSecs/60)));
-        if(cardioMins>0) parts.push('🏃 '+fmtMins(Math.round(cardioMins)));
-        return parts.map(p=>`<span class="chip">${p}</span>`).join('');
-      })()}
-    </div>
-
-    ${/* Ligne 3: groupes musculaires */ ''}
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-      ${[...new Set((s.exercises||[]).filter(e=>e.sets.some(x=>x.done)).map(e=>e.muscle))].map(m=>`<span class="chip">${m}</span>`).join('')}
-    </div>
-
-    ${exHtml || '<div style="color:var(--muted);font-size:13px">Aucune série complétée</div>'}
+    <div style="font-size:14px;color:var(--muted);margin-bottom:12px">${dateStr}</div>
+    ${summaryHtml}
   `;
   openModal('modalHistoryDetail');
 }
