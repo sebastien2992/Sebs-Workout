@@ -334,7 +334,6 @@
   <div class="section-title">Historique</div>
   <div style="display:flex;gap:8px;margin-bottom:16px">
     <button id="histTabExercices" class="lib-tab lib-tab-active" onclick="setHistTab('exercices')">Exercices</button>
-    <button id="histTabSeances" class="lib-tab" onclick="setHistTab('seances')">Séances</button>
     <button id="histTabSemaine" class="lib-tab" onclick="setHistTab('semaine')">Semaines</button>
   </div>
   <div id="historyList"></div>
@@ -673,13 +672,13 @@
   <div class="modal">
     <div class="modal-title">Quelle séance ?</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
-      <button class="session-type-btn" onclick="startSession('Bas du corps')">
-        <div class="session-type-label">Bas du corps</div>
-        <div class="session-type-sub">Jambes · Fessiers</div>
-      </button>
       <button class="session-type-btn" onclick="startSession('Haut du corps')">
         <div class="session-type-label">Haut du corps</div>
         <div class="session-type-sub">Pectoraux · Dos · Épaules</div>
+      </button>
+      <button class="session-type-btn" onclick="startSession('Bas du corps')">
+        <div class="session-type-label">Bas du corps</div>
+        <div class="session-type-sub">Jambes · Fessiers</div>
       </button>
       <button class="session-type-btn" onclick="startSession('Cardio')">
         <div class="session-type-label">Cardio</div>
@@ -3372,7 +3371,6 @@ let histTab = 'exercices';
 function setHistTab(tab) {
   histTab = tab;
   document.getElementById('histTabExercices').className = 'lib-tab' + (tab==='exercices' ? ' lib-tab-active' : '');
-  document.getElementById('histTabSeances').className = 'lib-tab' + (tab==='seances' ? ' lib-tab-active' : '');
   const semEl = document.getElementById('histTabSemaine');
   if (semEl) semEl.className = 'lib-tab' + (tab==='semaine' ? ' lib-tab-active' : '');
   renderHistory();
