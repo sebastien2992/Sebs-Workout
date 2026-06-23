@@ -748,11 +748,19 @@
       </div>
     </div>
     <div id="exerciseDetailContent"></div>
+    <!-- Last performance -->
+    <div id="detailLastPerf" style="display:none;background:var(--surface2);border-radius:8px;padding:10px 14px;margin-top:12px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:6px">Dernière performance</div>
+      <div id="detailLastPerfContent" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--accent)"></div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
       <button class="btn btn-secondary" id="detailEditBtn" onclick="openEditExercise()">✏️ Modifier</button>
       <button class="btn btn-secondary" onclick="duplicateExercise()">⧉ Dupliquer</button>
       <button class="btn btn-secondary" onclick="closeModal('modalExerciseDetail')">Fermer</button>
-      <button class="btn" id="detailFavBtn" onclick="toggleFav(currentDetailId,null);updateDetailFavBtn()" style="background:var(--surface2);border:1px solid var(--border);font-size:18px">☆</button>
+      <button class="btn btn-secondary" id="detailHistBtn" onclick="showDetailHistory()" style="display:none">📊 Historique</button>
+    </div>
+    <div id="detailFavRow" style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn" id="detailFavBtn" onclick="toggleFav(currentDetailId,null);updateDetailFavBtn()" style="flex:1;background:var(--surface2);border:1px solid var(--border);font-size:18px">☆</button>
     </div>
   </div>
 </div>
@@ -2077,6 +2085,13 @@ function openExerciseDetail(id, fromSession=false) {
   const addBtnTop = document.getElementById('detailAddBtnTop');
   if (addBtnTop) addBtnTop.style.display = 'block';
 
+  // Show/hide history button
+  const histBtn = document.getElementById('detailHistBtn');
+  const lastPerfDiv = document.getElementById('detailLastPerf');
+  const histEntry = getExerciseHistory().find(e => e.id === id || e.name === exercises.find(ex=>ex.id===id)?.name);
+  if (histBtn) histBtn.style.display = histEntry ? '' : 'none';
+  if (lastPerfDiv) lastPerfDiv.style.display = 'none';
+
   // Update Refaire button based on history
   const redoBtn = document.getElementById('detailRedoBtn');
   if (redoBtn) {
@@ -2147,6 +2162,45 @@ let editingExId = null;
 
 // Custom photos stored separately (can be large base64)
 let editPhotoData = null; // temp during edit (null = no change, '' = deleted, 'data:...' = new)
+
+function showDetailHistory() {
+  const ex = exercises.find(e=>e.id===currentDetailId);
+  if (!ex) return;
+  const hist = getExerciseHistory().find(e=>e.id===currentDetailId||e.name===ex.name);
+  if (!hist) return;
+  const lastPerfDiv = document.getElementById('detailLastPerf');
+  const lastPerfContent = document.getElementById('detailLastPerfContent');
+  if (!lastPerfDiv || !lastPerfContent) return;
+
+  const doneSets = (hist.sets||[]).filter(s=>s.done);
+  const d = new Date(hist.date||hist.startTime||Date.now());
+  const dateStr = d.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
+
+  let setsHtml = '';
+  if (hist.isBike) {
+    const s=hist.sets[0]||{};
+    const km=parseFloat(s.km)||0; const hrs=parseInt(s.hours)||0; const mins=parseInt(s.mins)||0;
+    setsHtml = `<div style="font-size:16px;color:var(--text)">${km>0?'📍 '+km+' km · ':''} ⏱ ${hrs>0?hrs+'h ':''}${mins} min</div>`;
+  } else if (hist.type==='Cardio') {
+    setsHtml = `<div class="sets-header grid-cardio" style="margin-top:8px"><span>#</span><span>Vitesse</span><span>Inclin.</span><span>Min</span></div>` +
+      doneSets.map((s,i)=>`<div class="set-row grid-cardio done"><div class="set-num">${i+1}</div>
+        <div class="set-input" style="text-align:center">${s.speed||'—'}</div>
+        <div class="set-input" style="text-align:center">${s.incline||'—'}</div>
+        <div class="set-input" style="text-align:center">${s.minutes||'—'}</div>
+      </div>`).join('');
+  } else {
+    setsHtml = `<div class="sets-header grid-strength" style="margin-top:8px"><span>#</span><span>Reps</span><span>Poids</span><span>✓</span></div>` +
+      doneSets.map((s,i)=>`<div class="set-row grid-strength done"><div class="set-num">${i+1}</div>
+        <div class="set-input" style="text-align:center">${s.reps||'—'}</div>
+        <div class="set-input" style="text-align:center">${s.kg?s.kg+' kg':'—'}</div>
+        <div style="display:flex;align-items:center;justify-content:center"><span style="color:var(--accent);font-size:18px">✓</span></div>
+      </div>`).join('');
+  }
+
+  lastPerfContent.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:6px">${dateStr}</div>${setsHtml}`;
+  lastPerfDiv.style.display = lastPerfDiv.style.display==='none' ? 'block' : 'none';
+  document.getElementById('detailHistBtn').textContent = lastPerfDiv.style.display==='none' ? '📊 Historique' : '📊 Masquer';
+}
 
 function openEditExercise() {
   const ex = exercises.find(e=>e.id===currentDetailId);
@@ -2813,6 +2867,32 @@ function updateSummaryTime() {
   // Could validate here if needed
 }
 
+function updateRepertoireFromSession(sessionEntry) {
+  if (!repertoire || !repertoire.length) return;
+  let updated = false;
+  repertoire.forEach(rep => {
+    (rep.exercises||[]).forEach(repEx => {
+      // Find matching exercise in the completed session
+      const sessionEx = (sessionEntry.exercises||[]).find(e => e.id===repEx.id || e.name===repEx.name);
+      if (sessionEx) {
+        const doneSets = (sessionEx.sets||[]).filter(s=>s.done);
+        if (doneSets.length > 0) {
+          repEx.sets = doneSets.length;
+          if (!sessionEx.isBike && sessionEx.type !== 'Cardio') {
+            repEx.reps = doneSets[0].reps || repEx.reps;
+            repEx.kg = doneSets[0].kg || repEx.kg;
+          }
+          updated = true;
+        }
+      }
+    });
+  });
+  if (updated) {
+    save('il_repertoire', repertoire);
+    showToast('Répertoire mis à jour ✓');
+  }
+}
+
 function confirmFinishSession() {
   if (progSessionMode) {
     endProgSession();
@@ -2841,6 +2921,8 @@ function confirmFinishSession() {
   const entry = { ...session, startTime, endTime: Date.now(), duration, calories: totalCalories };
   history.unshift(entry);
   save(STORAGE_KEYS.history, history);
+  // Update matching repertoire sessions with new exercise data
+  updateRepertoireFromSession(entry);
   session = null;
   save(STORAGE_KEYS.session, null);
   resetTimer();
@@ -3078,7 +3160,22 @@ function renderExGrid(exList, showAddBtn) {
 function renderExCardWithFav(ex, showAdd) {
   const photo = getExPhoto(ex);
   const fav = isFav(ex.id);
-  const hasHist = typeof getExerciseHistory==='function' && getExerciseHistory().some(e=>e.id===ex.id||e.name===ex.name);
+  const hist = typeof getExerciseHistory==='function' ? getExerciseHistory().find(e=>e.id===ex.id||e.name===ex.name) : null;
+  const hasHist = !!hist;
+
+  // Build last perf summary
+  let lastPerfHtml = '';
+  if (hasHist) {
+    const doneSets = (hist.sets||[]).filter(s=>s.done);
+    if (doneSets.length > 0 && !ex.isBike && ex.type !== 'Cardio') {
+      const bestKg = Math.max(0,...doneSets.map(s=>parseFloat(s.kg)||0));
+      const reps = doneSets[0].reps || '';
+      lastPerfHtml = `<div style="font-size:10px;color:var(--accent);padding:0 8px 4px;font-family:'Barlow Condensed',sans-serif;font-weight:700">${doneSets.length}×${reps}${bestKg>0?' · '+bestKg+'kg':''}</div>`;
+    } else if (ex.type==='Cardio' && !ex.isBike) {
+      const mins = doneSets.reduce((a,s)=>a+(parseFloat(s.minutes)||0),0);
+      if (mins>0) lastPerfHtml = `<div style="font-size:10px;color:var(--accent);padding:0 8px 4px;font-family:'Barlow Condensed',sans-serif;font-weight:700">${Math.round(mins)} min</div>`;
+    }
+  }
 
   const redoBtnHtml = (showAdd && hasHist)
     ? `<button onclick="event.stopPropagation();quickRedoExercise(${ex.id})" style="position:absolute;bottom:60px;right:6px;z-index:2;background:var(--accent);border:none;border-radius:6px;width:28px;height:28px;color:var(--bg);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900" title="Refaire">↺</button>`
