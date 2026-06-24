@@ -2718,13 +2718,21 @@ function cancelSession() {
   if (!session) return;
   if (!confirm('Annuler la séance ? Toutes les données seront perdues.')) return;
   const wasProgMode = progSessionMode;
+  const wasRepertoireMode = repertoireMode;
   progSessionMode = false;
+  repertoireMode = false;
+  window._editingRepertoireIdx = null;
   session = null;
   save(STORAGE_KEYS.session, null);
+  const progBanner = document.getElementById('progModeBanner');
+  if (progBanner) progBanner.style.display = 'none';
   renderSession();
   const wd3 = document.getElementById('warriorDiv'); if(wd3) wd3.style.display = '';
   if (wasProgMode) {
     openModal('modalProgramme');
+    showToast('Séance annulée');
+  } else if (wasRepertoireMode) {
+    openRepertoirePage();
     showToast('Séance annulée');
   } else {
     showToast('Séance annulée');
@@ -5315,7 +5323,6 @@ function renderRepertoire() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px">${s.name}</div>
-          ${s.sessionType ? `<div style="font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">${s.sessionType}</div>` : ''}
           <div style="font-size:12px;color:var(--muted);margin-top:2px">${(s.exercises||[]).length} exercice${(s.exercises||[]).length>1?'s':''}</div>
           <div style="font-size:12px;color:var(--muted)">${exNames}${more}</div>
         </div>
@@ -5347,7 +5354,7 @@ function launchRepertoireSession(idx) {
     } else sets=buildDefaultSets(ex,de);
     return {...ex,expanded:true,startTime:null,elapsedSecs:0,finished:false,sets};
   });
-  session = { name: s.name, sessionType: s.sessionType || s.name, startTime: Date.now(), exercises: sessionExercises };
+  session = { name: s.name, startTime: Date.now(), exercises: sessionExercises };
   save(STORAGE_KEYS.session, session);
   // Navigate to Séance tab
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -5365,7 +5372,6 @@ function editRepertoireSession(idx) {
   // Build proper sets for each exercise
   session = {
     name: s.name,
-    sessionType: s.sessionType || s.name,
     startTime: Date.now(),
     exercises: (s.exercises||[]).map(e => {
       const ex = exercises.find(ex=>ex.id===e.id)||e;
@@ -5404,12 +5410,8 @@ function saveToRepertoire() {
   if (!session) return;
   repertoireMode = false;
   const idx = window._editingRepertoireIdx;
-  const existingName = (idx !== undefined && idx !== null && idx >= 0) ? (repertoire[idx]?.name || '') : '';
-  const defaultName = existingName || session.name || '';
-  const entryName = (prompt('Nom de la séance dans le répertoire :', defaultName) || '').trim() || defaultName;
   const entry = {
-    name: entryName,
-    sessionType: session.sessionType || session.name,
+    name: session.name,
     exercises: session.exercises.map(ex => ({
       id: ex.id, name: ex.name, muscle: ex.muscle, type: ex.type, isBike: ex.isBike,
       sets: ex.sets.length, reps: (ex.sets[0]||{}).reps||'', kg: (ex.sets[0]||{}).kg||''
