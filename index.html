@@ -513,7 +513,7 @@
       <div style="text-align:right">
         <div style="font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Dernier poids</div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:var(--accent)" id="lastWeightVal">—</div>
-        <div style="font-size:11px;color:var(--muted)" id="lastWeightDate">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px" id="lastWeightDate">—</div>
       </div>
     </div>
     <div style="margin-top:14px">
@@ -4451,7 +4451,8 @@ function renderProfil() {
 
   // Last weight display (even without height)
   if (document.getElementById('imcCard').style.display !== 'none') {
-    document.getElementById('lastWeightVal').textContent = latest.weight + ' lb';
+    const kg = (latest.weight * 0.453592).toFixed(1);
+    document.getElementById('lastWeightVal').innerHTML = latest.weight + ' lb<span style="display:block;font-size:20px;color:#ffffff;font-weight:700;line-height:0.8;margin-top:-4px">' + kg + ' kg</span>';
     const d = new Date(latest.date);
     document.getElementById('lastWeightDate').textContent = d.toLocaleDateString('fr-FR', {day:'numeric',month:'long'});
   }
