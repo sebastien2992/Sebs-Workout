@@ -2116,16 +2116,9 @@ function openExerciseDetail(id, fromSession=false) {
       </div>`
     : '';
 
-  // Extract YouTube video ID from any URL format (watch, shorts, youtu.be) or raw ID
-  const ytRaw = ex.video || '';
-  let ytId = ytRaw;
-  const ytMatch = ytRaw.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  if (ytMatch) ytId = ytMatch[1];
-  const ytLink = `https://www.youtube.com/watch?v=${ytId}`;
-
   const videoHtml = ex.video
     ? `<div class="video-section-title">▶ Vidéo démonstration</div>
-       <a href="${ytLink}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;background:#1e1e1e;border:1px solid #1e1e1e;border-radius:10px;padding:14px 16px;text-decoration:none;margin-bottom:16px;transition:border-color 0.2s" onmouseenter="this.style.borderColor='#e8ff47'" onmouseleave="this.style.borderColor='#1e1e1e'">
+       <a href="https://www.youtube.com/watch?v=${ex.video}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;background:#1e1e1e;border:1px solid #1e1e1e;border-radius:10px;padding:14px 16px;text-decoration:none;margin-bottom:16px;transition:border-color 0.2s" onmouseenter="this.style.borderColor='#e8ff47'" onmouseleave="this.style.borderColor='#1e1e1e'">
          <div style="background:#ff0000;border-radius:8px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
          </div>
@@ -4123,7 +4116,18 @@ function renderStats() {
   const allMuscles = ['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Abdominaux','Cardio'];
   const mc={};
   allMuscles.forEach(m => mc[m] = 0);
-  weekGymSessions.forEach(s=>s.exercises.forEach(e=>{if(e.muscle) mc[e.muscle]=(mc[e.muscle]||0)+e.sets.filter(x=>x.done).length;}));
+  weekGymSessions.forEach(s=>s.exercises.forEach(e=>{
+    if(!e.muscle) return;
+    let setCount = 0;
+    if (Array.isArray(e.sets)) {
+      // Live session: sets is an array of {done, reps, kg...}
+      setCount = e.sets.filter(x=>x.done).length || e.sets.length;
+    } else if (typeof e.sets === 'number') {
+      // Repertoire/history: sets is just a number
+      setCount = e.sets;
+    }
+    mc[e.muscle] = (mc[e.muscle]||0) + setCount;
+  }));
   const mx=Math.max(...Object.values(mc),1);
   document.getElementById('muscleStats').innerHTML=allMuscles.sort((a,b)=>(mc[b]||0)-(mc[a]||0)).map(m=>{const c=mc[m]||0; return `
     <div style="margin-bottom:8px">
