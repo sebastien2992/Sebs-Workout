@@ -4116,22 +4116,11 @@ function renderStats() {
   const allMuscles = ['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Abdominaux','Cardio'];
   const mc={};
   allMuscles.forEach(m => mc[m] = 0);
-  weekGymSessions.forEach(s=>s.exercises.forEach(e=>{
-    if(!e.muscle) return;
-    let setCount = 0;
-    if (Array.isArray(e.sets)) {
-      // Live session: sets is an array of {done, reps, kg...}
-      setCount = e.sets.filter(x=>x.done).length || e.sets.length;
-    } else if (typeof e.sets === 'number') {
-      // Repertoire/history: sets is just a number
-      setCount = e.sets;
-    }
-    mc[e.muscle] = (mc[e.muscle]||0) + setCount;
-  }));
+  weekGymSessions.forEach(s=>s.exercises.forEach(e=>{if(e.muscle && e.muscle!=='Cardio') mc[e.muscle]=(mc[e.muscle]||0)+1;}));
   const mx=Math.max(...Object.values(mc),1);
   document.getElementById('muscleStats').innerHTML=allMuscles.sort((a,b)=>(mc[b]||0)-(mc[a]||0)).map(m=>{const c=mc[m]||0; return `
     <div style="margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span style="color:${c>0?'var(--text)':'var(--muted)'}">${m}</span><span style="color:var(--muted)">${c>0?c+' séries':'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span style="color:${c>0?'var(--text)':'var(--muted)'}">${m}</span><span style="color:var(--muted)">${c>0?c+(c>1?' exercices':' exercice'):'—'}</span></div>
       <div style="background:var(--surface2);border-radius:4px;height:4px"><div style="background:${c>0?'var(--accent)':'var(--surface2)'};height:100%;border-radius:4px;width:${Math.round(c/mx*100)}%;transition:width 0.5s"></div></div>
     </div>`;}).join('');
 
