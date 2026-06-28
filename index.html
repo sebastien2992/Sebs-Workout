@@ -3822,6 +3822,7 @@ function renderWeeklyHistoryTab() {
         </div>
         <div style="text-align:right">
           ${s.calories?`<div style="font-size:13px;color:var(--accent)">🔥 ${s.calories} kcal</div>`:''}
+          ${s.steps?`<div style="font-size:13px;color:var(--accent)">👟 ${s.steps.toLocaleString()} pas</div>`:''}
           <div style="font-size:12px;color:var(--muted)">${fmtMins(s.duration||0)}</div>
         </div>
       </div>`;
