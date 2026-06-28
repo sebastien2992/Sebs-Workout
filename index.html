@@ -3821,8 +3821,10 @@ function renderWeeklyHistoryTab() {
           <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px">${s.isExt?'🌿 '+s.sport:(s.sessionType||s.name)}</div>
         </div>
         <div style="text-align:right">
-          ${s.calories?`<div style="font-size:13px;color:var(--accent)">🔥 ${s.calories} kcal</div>`:''}
-          ${s.steps?`<div style="font-size:13px;color:var(--accent)">👟 ${s.steps.toLocaleString()} pas</div>`:''}
+          <div style="font-size:13px;color:var(--accent);display:flex;gap:8px;justify-content:flex-end">
+            ${s.steps?`<span>👟 ${s.steps.toLocaleString()} pas</span>`:''}
+            ${s.calories?`<span>🔥 ${s.calories} kcal</span>`:''}
+          </div>
           <div style="font-size:12px;color:var(--muted)">${fmtMins(s.duration||0)}</div>
         </div>
       </div>`;
