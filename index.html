@@ -89,7 +89,7 @@
   .check-btn.done { background:var(--accent); border-color:var(--accent); color:var(--bg); }
   .add-set-btn { width:100%; background:transparent; border:1px dashed var(--border); border-radius:6px; color:var(--muted); font-family:'Barlow',sans-serif; font-size:13px; padding:8px; cursor:pointer; margin-top:4px; transition:all 0.2s; }
   .add-set-btn:active { border-color:var(--accent); color:var(--accent); }
-  .timer-bar { background:var(--surface); border:1px solid var(--border); border-radius:0 0 var(--radius) var(--radius); padding:10px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; position:relative; top:0; z-index:50; box-shadow:none; }
+  .timer-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; position:fixed; top:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; z-index:150; box-shadow:0 2px 12px rgba(0,0,0,0.4); display:none; }
   .timer-display { font-family:'Barlow Condensed',sans-serif; font-size:36px; font-weight:900; color:var(--accent); letter-spacing:-1px; }
   .timer-label { font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:500; }
   .timer-controls { display:flex; gap:8px; }
@@ -271,7 +271,8 @@
     </div>
     <!-- GYM SESSION VIEW -->
     <div id="gym-session-view">
-    <div class="timer-bar">
+    <div style="height:70px" id="timerBarSpacer"></div>
+    <div class="timer-bar" id="stickyTimerBar">
       <div>
         <div class="timer-label">Repos</div>
         <div class="timer-display" id="timerDisplay">00:00</div>
@@ -360,8 +361,8 @@
 <div id="page-history" class="page">
   <div class="section-title">Historique</div>
   <div style="display:flex;gap:8px;margin-bottom:16px">
-    <button id="histTabExercices" class="lib-tab lib-tab-active" onclick="setHistTab('exercices')">Exercices</button>
-    <button id="histTabSemaine" class="lib-tab" onclick="setHistTab('semaine')">Semaines</button>
+    <button id="histTabSemaine" class="lib-tab lib-tab-active" onclick="setHistTab('semaine')">Semaines</button>
+    <button id="histTabExercices" class="lib-tab" onclick="setHistTab('exercices')">Exercices</button>
   </div>
   <div id="historyList"></div>
 </div>
@@ -1682,6 +1683,9 @@ function showPage(id, tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   if (tab) tab.classList.add('active');
+  // Masquer le timer sticky si on quitte la page séance
+  const tb = document.getElementById('stickyTimerBar');
+  if (tb) tb.style.display = (id === 'session') ? 'flex' : 'none';
   try {
     if(id==='library') renderLibrary();
     if(id==='history') renderHistory();
@@ -3486,7 +3490,7 @@ function fmtMins(m) {
   return rem > 0 ? h + 'h ' + rem + 'min' : h + 'h';
 }
 // ─── EXERCISE HISTORY ──────────────────────────────
-let histTab = 'exercices';
+let histTab = 'semaine';
 
 function setHistTab(tab) {
   histTab = tab;
