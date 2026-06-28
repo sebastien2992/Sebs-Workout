@@ -4118,10 +4118,10 @@ function renderStats() {
 
   const weekCal = Math.round(weekSessions.reduce((a,s)=>a+(s.calories||0),0));
   const calEl = document.getElementById('statCalWeek'); if(calEl) calEl.textContent = weekCal > 0 ? weekCal+' kcal' : '—';
-  const allMuscles = ['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Abdominaux','Cardio'];
+  const allMuscles = ['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Abdominaux'];
   const mc={};
   allMuscles.forEach(m => mc[m] = 0);
-  weekGymSessions.forEach(s=>s.exercises.forEach(e=>{if(e.muscle) mc[e.muscle]=(mc[e.muscle]||0)+e.sets.filter(x=>x.done).length;}));
+  weekGymSessions.forEach(s=>(s.exercises||[]).forEach(e=>{if(e.muscle && e.muscle!=='Cardio') mc[e.muscle]=(mc[e.muscle]||0)+1;}));
   const mx=Math.max(...Object.values(mc),1);
   document.getElementById('muscleStats').innerHTML=allMuscles.sort((a,b)=>(mc[b]||0)-(mc[a]||0)).map(m=>{const c=mc[m]||0; return `
     <div style="margin-bottom:8px">
