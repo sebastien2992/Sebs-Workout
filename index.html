@@ -1687,7 +1687,7 @@ function showPage(id, tab) {
   const tb = document.getElementById('stickyTimerBar');
   if (tb) tb.style.display = (id === 'session') ? 'flex' : 'none';
   try {
-    if(id==='library') renderLibrary();
+    if(id==='library') setMuscleFilter(currentMuscleFilter);
     if(id==='history') renderHistory();
     if(id==='stats') renderStats();
     if(id==='profil') renderProfil();
