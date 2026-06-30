@@ -78,8 +78,8 @@
   .sets-container.open { display:block; }
   .sets-header { display:grid; gap:5px; font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:600; letter-spacing:0.5px; margin-bottom:6px; padding:0 2px; }
   .set-row { display:grid; gap:5px; align-items:center; margin-bottom:6px; padding:2px; border-radius:6px; background:var(--bg); transition:background 0.2s; }
-  .grid-strength { grid-template-columns: 30px 1fr 1fr 46px; }
-  .grid-cardio   { grid-template-columns: 30px 1fr 1fr 1fr 46px; }
+  .grid-strength { grid-template-columns: 30px 1fr 1fr 46px 32px; }
+  .grid-cardio   { grid-template-columns: 30px 1fr 1fr 1fr 46px 32px; }
   .grid-bike     { grid-template-columns: 1fr 1fr; }
   .set-row.done { background:rgba(232,255,71,0.06); }
   .set-num { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:20px; color:var(--muted); text-align:center; }
@@ -1896,7 +1896,7 @@ function renderExercises() {
         </div>
       ` : `
       <div class="sets-header grid-cardio">
-          <span>#</span><span>Vitesse</span><span>Inclin.</span><span>Min</span><span>✓</span>
+          <span>#</span><span>Vitesse</span><span>Inclin.</span><span>Min</span><span>✓</span><span></span>
         </div>
         ${ex.sets.map((set,si) => `
           <div class="set-row grid-cardio ${set.done?'done':''}" id="setRow${ei}_${si}">
@@ -1905,6 +1905,7 @@ function renderExercises() {
             <input class="set-input" type="number" inputmode="decimal" step="0.1" placeholder="—" value="${set.incline||''}" onchange="updateSet(${ei},${si},'incline',this.value)">
             <input class="set-input" type="number" inputmode="numeric" placeholder="—" value="${set.minutes||''}" onchange="updateSet(${ei},${si},'minutes',this.value)">
             <button class="check-btn ${set.done?'done':''}" onclick="toggleSet(${ei},${si})">✓</button>
+            <button onclick="removeSet(${ei},${si})" style="background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;padding:4px">🗑</button>
           </div>
         `).join('')}
         <button class="add-set-btn" onclick="addSet(${ei})">+ Ajouter un intervalle</button>
@@ -1931,13 +1932,14 @@ function renderExercises() {
         </div>
       </div>` : `
       <div class="sets-container ${ex.expanded?'open':''}" id="sets${ei}">
-        <div class="sets-header grid-strength"><span>#</span><span>Reps</span><span>Poids</span><span>✓</span></div>
+        <div class="sets-header grid-strength"><span>#</span><span>Reps</span><span>Poids</span><span>✓</span><span></span></div>
         ${ex.sets.map((set,si) => `
           <div class="set-row grid-strength ${set.done?'done':''}" id="setRow${ei}_${si}">
             <div class="set-num">${si+1}</div>
             <input class="set-input" type="number" inputmode="numeric" placeholder="—" value="${set.reps||''}" onchange="updateSet(${ei},${si},'reps',this.value)">
             <input class="set-input" type="number" inputmode="decimal" placeholder="—" value="${set.kg||''}" onchange="updateSet(${ei},${si},'kg',this.value)">
             <button class="check-btn ${set.done?'done':''}" onclick="toggleSet(${ei},${si})">✓</button>
+            <button onclick="removeSet(${ei},${si})" style="background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;padding:4px">🗑</button>
           </div>
         `).join('')}
         <button class="add-set-btn" onclick="addSet(${ei})">+ Ajouter une série</button>
@@ -2013,6 +2015,14 @@ function removeExerciseFromSession(ei) {
   renderSession();
   showToast(name + ' retiré de la séance');
 }
+function removeSet(ei, si) {
+  if (!session || !session.exercises[ei]) return;
+  if (session.exercises[ei].sets.length <= 1) { showToast('Au moins une série requise'); return; }
+  session.exercises[ei].sets.splice(si, 1);
+  save(STORAGE_KEYS.session, session);
+  renderSession();
+}
+
 function addSet(ei) {
   const ex = session.exercises[ei];
   const last = ex.sets.length ? ex.sets[ex.sets.length-1] : {};
