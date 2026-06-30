@@ -4118,8 +4118,8 @@ function renderStats() {
   const weekStart = monday.getTime();
   const weekSessions = history.filter(s=>s.startTime >= weekStart);
   const weekGymSessions = weekSessions.filter(s=>!s.isExt);
-  const upperWeek = weekGymSessions.filter(s=>s.name==='Haut du corps').length;
-  const lowerWeek = weekGymSessions.filter(s=>s.name==='Bas du corps').length;
+  const upperWeek = weekGymSessions.filter(s=>(s.sessionType||s.name)==='Haut du corps').length;
+  const lowerWeek = weekGymSessions.filter(s=>(s.sessionType||s.name)==='Bas du corps').length;
   // Cardio = nombre total d'exercices cardio faits cette semaine
   let cardioWeek = 0;
   weekGymSessions.forEach(s => {
