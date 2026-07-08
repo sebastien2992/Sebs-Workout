@@ -5614,13 +5614,13 @@ let currentSwipePage = 'today';
 // ─── BOUTON RETOUR ANDROID ────────────────────────────────────────────────
 (function() {
   // Push multiple states so back button has room to work
-  history.pushState({app:true}, '', window.location.href);
-  history.pushState({app:true}, '', window.location.href);
-  history.pushState({app:true}, '', window.location.href);
+  window.history.pushState({app:true}, '', window.location.href);
+  window.history.pushState({app:true}, '', window.location.href);
+  window.history.pushState({app:true}, '', window.location.href);
 
   window.addEventListener('popstate', function(e) {
     // Always push a new state to keep intercepting
-    history.pushState({app:true}, '', window.location.href);
+    window.history.pushState({app:true}, '', window.location.href);
 
     // If a modal is open, close it
     const openModal = document.querySelector('.modal-overlay.open');
