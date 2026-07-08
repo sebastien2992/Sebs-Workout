@@ -89,7 +89,7 @@
   .check-btn.done { background:var(--accent); border-color:var(--accent); color:var(--bg); }
   .add-set-btn { width:100%; background:transparent; border:1px dashed var(--border); border-radius:6px; color:var(--muted); font-family:'Barlow',sans-serif; font-size:13px; padding:8px; cursor:pointer; margin-top:4px; transition:all 0.2s; }
   .add-set-btn:active { border-color:var(--accent); color:var(--accent); }
-  .timer-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; position:fixed; top:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; z-index:150; box-shadow:0 2px 12px rgba(0,0,0,0.4); display:none; }
+  .timer-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:10px 16px; align-items:center; justify-content:space-between; position:fixed; top:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; z-index:150; box-shadow:0 2px 12px rgba(0,0,0,0.4); display:none; }
   .timer-display { font-family:'Barlow Condensed',sans-serif; font-size:36px; font-weight:900; color:var(--accent); letter-spacing:-1px; }
   .timer-label { font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:500; }
   .timer-controls { display:flex; gap:8px; }
@@ -1686,7 +1686,7 @@ function showPage(id, tab) {
   if (tab) tab.classList.add('active');
   // Masquer le timer sticky si on quitte la page séance
   const tb = document.getElementById('stickyTimerBar');
-  if (tb) tb.style.display = (id === 'session') ? 'flex' : 'none';
+  if (tb) tb.style.display = (id === 'today' && session && !session.isExt) ? 'flex' : 'none';
   try {
     if(id==='library') setMuscleFilter(currentMuscleFilter);
     if(id==='history') renderHistory();
@@ -1800,6 +1800,9 @@ function renderSession() {
     if (extView) extView.style.display='none';
     if (gymView) gymView.style.display='block';
   }
+  const stickyTb = document.getElementById('stickyTimerBar');
+  const activePage = document.querySelector('.page.active');
+  if (stickyTb) stickyTb.style.display = (activePage && activePage.id === 'page-today') ? 'flex' : 'none';
   document.querySelector('.tabs').classList.add('session-active');
   document.getElementById('sessionNameDisplay').textContent = session.name;
   const started = new Date(session.startTime);
