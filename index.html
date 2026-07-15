@@ -79,7 +79,7 @@
   .sets-header { display:grid; gap:5px; font-size:11px; color:var(--muted); text-transform:uppercase; font-weight:600; letter-spacing:0.5px; margin-bottom:6px; padding:0 2px; }
   .set-row { display:grid; gap:5px; align-items:center; margin-bottom:6px; padding:2px; border-radius:6px; background:var(--bg); transition:background 0.2s; }
   .grid-strength { grid-template-columns: 30px 1fr 1fr 46px 32px; }
-  .grid-cardio   { grid-template-columns: 30px 1fr 1fr 1fr 46px 32px; }
+  .grid-cardio   { grid-template-columns: 30px 1fr 1fr 46px 32px; }
   .grid-bike     { grid-template-columns: 1fr 1fr; }
   .set-row.done { background:rgba(232,255,71,0.06); }
   .set-num { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:20px; color:var(--muted); text-align:center; }
@@ -1750,7 +1750,7 @@ function startSession(name, sessionType) {
     window._pendingAddExId = null;
     const ex = exercises.find(e=>e.id===pendingId);
     if (ex) {
-      const initSet = ex.isBike?{km:'',hours:'',mins:'',done:false}:ex.type==='Cardio'?{speed:'',incline:'',minutes:'',done:false}:{reps:'',kg:'',done:false};
+      const initSet = ex.isBike?{km:'',hours:'',mins:'',done:false}:ex.type==='Cardio'?{minutes:'',kcal:'',done:false}:{reps:'',kg:'',done:false};
       session.exercises.push({...ex,expanded:true,startTime:null,elapsedSecs:0,finished:false,sets:[initSet]});
   autoMarkPrev();
       save(STORAGE_KEYS.session, session);
@@ -1838,16 +1838,8 @@ const MET_BY_MUSCLE = {
 
 function calcExCalories(ex) {
   if (ex.type === 'Cardio') {
-    // Tapis: use MET based on speed + incline for each done interval
-    const bodyKg = weightLog.length ? (weightLog[0].weightKg || weightLog[0].weight * 0.453592) : 75;
-    return ex.sets.filter(s => s.done).reduce((total, s) => {
-      const speed = parseFloat(s.speed) || 5;
-      const incline = parseFloat(s.incline) || 0;
-      const mins = parseFloat(s.minutes) || 0;
-      // MET formula: MET ≈ 2.0 + 0.5*speed + 0.9*incline (approximation for treadmill)
-      const met = Math.max(2.5, 2.0 + (speed * 0.5) + (incline * 0.9));
-      return total + (met * bodyKg * (mins / 60));
-    }, 0);
+    // Cardio: sum manually entered kcal per completed interval
+    return ex.sets.filter(s => s.done).reduce((total, s) => total + (parseFloat(s.kcal) || 0), 0);
   }
   // Strength: MET * bodyweight * time_estimate
   // Time estimate: ~2.5 min per set (work + rest)
@@ -1909,40 +1901,23 @@ function renderExercises() {
         </div>
       ` : `
       <div class="sets-header grid-cardio">
-          <span>#</span><span>Vitesse</span><span>Inclin.</span><span>Min</span><span>✓</span><span></span>
+          <span>#</span><span>Min</span><span>Kcal</span><span>✓</span><span></span>
         </div>
         ${ex.sets.map((set,si) => `
           <div class="set-row grid-cardio ${set.done?'done':''}" id="setRow${ei}_${si}">
             <div class="set-num">${si+1}</div>
-            <input class="set-input" type="number" inputmode="decimal" step="0.1" placeholder="—" value="${set.speed||''}" onchange="updateSet(${ei},${si},'speed',this.value)">
-            <input class="set-input" type="number" inputmode="decimal" step="0.1" placeholder="—" value="${set.incline||''}" onchange="updateSet(${ei},${si},'incline',this.value)">
             <input class="set-input" type="number" inputmode="numeric" placeholder="—" value="${set.minutes||''}" onchange="updateSet(${ei},${si},'minutes',this.value)">
+            <input class="set-input" type="number" inputmode="numeric" placeholder="—" value="${set.kcal||''}" onchange="updateSet(${ei},${si},'kcal',this.value)">
             <button class="check-btn ${set.done?'done':''}" onclick="toggleSet(${ei},${si})">✓</button>
             <button onclick="removeSet(${ei},${si})" style="background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;padding:4px">🗑</button>
           </div>
         `).join('')}
         <button class="add-set-btn" onclick="addSet(${ei})">+ Ajouter un intervalle</button>
       `}
-        ${ex.sets.filter(s=>s.done).length > 0 ? `<div style="margin-top:8px;padding:8px;background:rgba(232,255,71,0.06);border-radius:6px;display:flex;justify-content:space-between;font-size:12px">
-          <span style="color:var(--muted)">Temps total complété</span>
+        ${ex.sets.filter(s=>s.done).length > 0 ? `<div style="margin-top:8px;padding:8px;background:rgba(232,255,71,0.06);border-radius:6px;display:flex;justify-content:space-between;align-items:center;font-size:12px">
           <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--accent);font-size:16px">${ex.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.minutes)||0),0)} min</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--accent);font-size:16px">🔥 ${Math.round(calcExCalories(ex))} kcal</span>
         </div>` : ''}
-        <div style="margin-top:8px;padding:8px;background:rgba(232,255,71,0.06);border-radius:6px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <span style="font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:600;letter-spacing:0.5px">🔥 Calories machine</span>
-            <span style="font-size:11px;color:var(--muted)">Optionnel</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <input class="set-input" type="number" inputmode="numeric" placeholder="—"
-              value="${ex.calories||''}"
-              onchange="updateExCalories(${ei},this.value)"
-              style="width:90px;font-size:20px;flex-shrink:0">
-            <div style="flex:1;text-align:right">
-              <div style="font-size:10px;color:var(--muted)">Estimation</div>
-              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:${ex.calories?'var(--muted)':'var(--accent)'};font-size:18px">~${Math.round(calcExCalories(ex))} kcal</div>
-            </div>
-          </div>
-        </div>
       </div>` : `
       <div class="sets-container ${ex.expanded?'open':''}" id="sets${ei}">
         <div class="sets-header grid-strength"><span>#</span><span>Reps</span><span>Poids</span><span>✓</span><span></span></div>
@@ -2050,7 +2025,7 @@ function addSet(ei) {
   const ex = session.exercises[ei];
   const last = ex.sets.length ? ex.sets[ex.sets.length-1] : {};
   if (ex.type === 'Cardio') {
-    ex.sets.push({ speed:last.speed||'', incline:last.incline||'', minutes:last.minutes||'', done:false });
+    ex.sets.push({ minutes:last.minutes||'', kcal:'', done:false });
   } else {
     ex.sets.push({ reps:last.reps||'', kg:last.kg||'', done:false });
   }
@@ -2228,11 +2203,10 @@ function showDetailHistory() {
     const km=parseFloat(s.km)||0; const hrs=parseInt(s.hours)||0; const mins=parseInt(s.mins)||0;
     setsHtml = `<div style="font-size:16px;color:var(--text)">${km>0?'📍 '+km+' km · ':''} ⏱ ${hrs>0?hrs+'h ':''}${mins} min</div>`;
   } else if (hist.type==='Cardio') {
-    setsHtml = `<div class="sets-header grid-cardio" style="margin-top:8px"><span>#</span><span>Vitesse</span><span>Inclin.</span><span>Min</span></div>` +
+    setsHtml = `<div class="sets-header grid-cardio" style="margin-top:8px"><span>#</span><span>Min</span><span>Kcal</span></div>` +
       doneSets.map((s,i)=>`<div class="set-row grid-cardio done"><div class="set-num">${i+1}</div>
-        <div class="set-input" style="text-align:center">${s.speed||'—'}</div>
-        <div class="set-input" style="text-align:center">${s.incline||'—'}</div>
         <div class="set-input" style="text-align:center">${s.minutes||'—'}</div>
+        <div class="set-input" style="text-align:center">${s.kcal||'—'}</div>
       </div>`).join('');
   } else {
     setsHtml = `<div class="sets-header grid-strength" style="margin-top:8px"><span>#</span><span>Reps</span><span>Poids</span><span>✓</span></div>` +
@@ -2389,8 +2363,8 @@ function quickRedoExercise(id) {
     const s=(histEntry.sets&&histEntry.sets[0])||{};
     prevSets=[{km:s.km||'',hours:s.hours||'',mins:s.mins||'',done:false}];
   } else if (histEntry.type==='Cardio') {
-    prevSets=(histEntry.sets||[]).filter(s=>s.done).map(s=>({speed:s.speed||'',incline:s.incline||'',minutes:s.minutes||'',done:false}));
-    if(!prevSets.length) prevSets=[{speed:'',incline:'',minutes:'',done:false}];
+    prevSets=(histEntry.sets||[]).filter(s=>s.done).map(s=>({minutes:s.minutes||'',kcal:s.kcal||'',done:false}));
+    if(!prevSets.length) prevSets=[{minutes:'',kcal:'',done:false}];
   } else {
     prevSets=(histEntry.sets||[]).filter(s=>s.done).map(s=>({reps:s.reps||'',kg:s.kg||'',done:false}));
     if(!prevSets.length) prevSets=[{reps:'',kg:'',done:false}];
@@ -2429,8 +2403,8 @@ function redoExerciseFromDetail() {
     const s=(histEntry.sets&&histEntry.sets[0])||{};
     prevSets=[{km:s.km||'',hours:s.hours||'',mins:s.mins||'',done:false}];
   } else if (histEntry.type==='Cardio') {
-    prevSets=(histEntry.sets||[]).filter(s=>s.done).map(s=>({speed:s.speed||'',incline:s.incline||'',minutes:s.minutes||'',done:false}));
-    if(!prevSets.length) prevSets=[{speed:'',incline:'',minutes:'',done:false}];
+    prevSets=(histEntry.sets||[]).filter(s=>s.done).map(s=>({minutes:s.minutes||'',kcal:s.kcal||'',done:false}));
+    if(!prevSets.length) prevSets=[{minutes:'',kcal:'',done:false}];
   } else {
     prevSets=(histEntry.sets||[]).filter(s=>s.done).map(s=>({reps:s.reps||'',kg:s.kg||'',done:false}));
     if(!prevSets.length) prevSets=[{reps:'',kg:'',done:false}];
@@ -2456,7 +2430,7 @@ function addCurrentExToSession() {
   const ex = exercises.find(e=>e.id===currentDetailId);
   if (!ex) return;
   const initSet = ex.type === 'Cardio'
-    ? {speed:'',incline:'',minutes:'',done:false}
+    ? {minutes:'',kcal:'',done:false}
     : {reps:'',kg:'',done:false};
   session.exercises.push({ ...ex, expanded:true, startTime:Date.now(), elapsedSecs:0, finished:false, sets:[initSet] });
   autoMarkPrev();
@@ -2579,8 +2553,8 @@ function addExFromHistory(idx) {
     const s=(e.sets&&e.sets[0])||{};
     prevSets=[{km:s.km||'',hours:s.hours||'',mins:s.mins||'',done:false}];
   } else if (e.type==='Cardio') {
-    prevSets=(e.sets||[]).filter(s=>s.done).map(s=>({speed:s.speed||'',incline:s.incline||'',minutes:s.minutes||'',done:false}));
-    if(!prevSets.length) prevSets=[{speed:'',incline:'',minutes:'',done:false}];
+    prevSets=(e.sets||[]).filter(s=>s.done).map(s=>({minutes:s.minutes||'',kcal:s.kcal||'',done:false}));
+    if(!prevSets.length) prevSets=[{minutes:'',kcal:'',done:false}];
   } else {
     prevSets=(e.sets||[]).filter(s=>s.done).map(s=>({reps:s.reps||'',kg:s.kg||'',done:false}));
     if(!prevSets.length) prevSets=[{reps:'',kg:'',done:false}];
@@ -2672,7 +2646,7 @@ function addFSFromHist(idx) {
   if (!e || !session) return;
   let prevSets;
   if(e.isBike){const s=(e.sets&&e.sets[0])||{};prevSets=[{km:s.km||'',hours:s.hours||'',mins:s.mins||'',done:false}];}
-  else if(e.type==='Cardio'){prevSets=(e.sets||[]).filter(s=>s.done).map(s=>({speed:s.speed||'',incline:s.incline||'',minutes:s.minutes||'',done:false}));if(!prevSets.length)prevSets=[{speed:'',incline:'',minutes:'',done:false}];}
+  else if(e.type==='Cardio'){prevSets=(e.sets||[]).filter(s=>s.done).map(s=>({minutes:s.minutes||'',kcal:s.kcal||'',done:false}));if(!prevSets.length)prevSets=[{minutes:'',kcal:'',done:false}];}
   else{prevSets=(e.sets||[]).filter(s=>s.done).map(s=>({reps:s.reps||'',kg:s.kg||'',done:false}));if(!prevSets.length)prevSets=[{reps:'',kg:'',done:false}];}
   const ex=exercises.find(ex=>ex.id===e.id)||{id:e.id,name:e.name,muscle:e.muscle,type:e.type,isBike:e.isBike};
   session.exercises.push({...ex,expanded:true,startTime:null,elapsedSecs:0,finished:false,sets:prevSets});
@@ -2747,7 +2721,7 @@ function addExerciseToSessionById(id) {
     return;
   }
   const initSet = ex.isBike ? {km:'',hours:'',mins:'',done:false}
-    : ex.type === 'Cardio' ? {speed:'',incline:'',minutes:'',done:false}
+    : ex.type === 'Cardio' ? {minutes:'',kcal:'',done:false}
     : {reps:'',kg:'',done:false};
   session.exercises.push({ ...ex, expanded:true, startTime:null, elapsedSecs:0, finished:false, sets:[initSet] });
   autoMarkPrev();
@@ -3246,7 +3220,7 @@ function renderExCardWithFav(ex, showAdd) {
 function addExToSessionAndReturn(id) {
   const ex = exercises.find(e=>e.id===id);
   if (!ex || !session) return;
-  const initSet = ex.isBike?{km:'',hours:'',mins:'',done:false}:ex.type==='Cardio'?{speed:'',incline:'',minutes:'',done:false}:{reps:'',kg:'',done:false};
+  const initSet = ex.isBike?{km:'',hours:'',mins:'',done:false}:ex.type==='Cardio'?{minutes:'',kcal:'',done:false}:{reps:'',kg:'',done:false};
   session.exercises.push({...ex,expanded:true,startTime:null,elapsedSecs:0,finished:false,sets:[initSet]});
   autoMarkPrev();
   save(STORAGE_KEYS.session,session);
@@ -3658,12 +3632,11 @@ function openExerciseHistoryDetail(idx) {
       </div>
     </div>`;
   } else if (e.type==='Cardio') {
-    setsHtml = `<div class="sets-header grid-cardio" style="margin-top:10px"><span>#</span><span>Vitesse</span><span>Inclin.</span><span>Min</span><span>✓</span></div>`
+    setsHtml = `<div class="sets-header grid-cardio" style="margin-top:10px"><span>#</span><span>Min</span><span>Kcal</span><span>✓</span></div>`
       + doneSets.map((s,i) => `<div class="set-row grid-cardio done">
         <span>${i+1}</span>
-        <span>${s.speed||'—'}</span>
-        <span>${s.incline||'—'}</span>
         <span>${s.minutes||'—'}</span>
+        <span>${s.kcal||'—'}</span>
         <span style="color:var(--accent)">✓</span>
       </div>`).join('');
   } else {
@@ -3702,9 +3675,9 @@ function redoExerciseToSession(e) {
     prevSets = [{ km: s.km||'', hours: s.hours||'', mins: s.mins||'', done: false }];
   } else if (e.type === 'Cardio') {
     prevSets = (e.sets||[]).filter(s=>s.done).map(s => ({
-      speed: s.speed||'', incline: s.incline||'', minutes: s.minutes||'', done: false
+      minutes: s.minutes||'', kcal: s.kcal||'', done: false
     }));
-    if (!prevSets.length) prevSets = [{speed:'',incline:'',minutes:'',done:false}];
+    if (!prevSets.length) prevSets = [{minutes:'',kcal:'',done:false}];
   } else {
     prevSets = (e.sets||[]).filter(s=>s.done).map(s => ({
       reps: s.reps||'', kg: s.kg||'', done: false
@@ -3957,19 +3930,19 @@ function openHistoryDetail(idx) {
     const isCardio = ex.type === 'Cardio';
     const vol = !isCardio ? doneSets.filter(x=>x.kg).reduce((a,x)=>a+(parseFloat(x.kg)||0)*(parseInt(x.reps)||0),0) : 0;
     const totalMins = isCardio ? doneSets.reduce((a,x)=>a+(parseFloat(x.minutes)||0),0) : 0;
-    const gridCols = isCardio ? '28px 1fr 1fr 1fr' : '28px 1fr 1fr';
-    const colHeader = isCardio ? '<span>#</span><span>Vitesse</span><span>Inclin.</span><span>Min</span>' : '<span>#</span><span>Reps</span><span>Poids</span>';
+    const gridCols = isCardio ? '28px 1fr 1fr' : '28px 1fr 1fr';
+    const colHeader = isCardio ? '<span>#</span><span>Min</span><span>Kcal</span>' : '<span>#</span><span>Reps</span><span>Poids</span>';
     const rowsHtml = doneSets.map((set,si) => {
       const cols = isCardio
-        ? `<span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--accent)">${set.speed||'—'}</span><span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px">${set.incline||'—'}</span><span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--muted)">${set.minutes||'—'}</span>`
+        ? `<span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--muted)">${set.minutes||'—'}</span><span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--accent)">${set.kcal||'—'}</span>`
         : `<span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px">${set.reps||'—'}</span><span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--accent)">${set.kg||'—'}</span>`;
       return `<div style="display:grid;grid-template-columns:${gridCols};gap:4px;background:rgba(232,255,71,0.05);border-radius:4px;padding:6px 4px;margin-bottom:4px"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--muted);font-size:17px">${si+1}</span>${cols}</div>`;
     }).join('');
     const bodyKg = weightLog.length ? (weightLog[0].weightKg || weightLog[0].weight * 0.453592) : 75;
     const exCalEst = (() => {
       if (isCardio) {
-        return ex.calories ? Math.round(ex.calories)
-          : Math.round(doneSets.reduce((t,s)=>{const spd=parseFloat(s.speed)||5;const inc=parseFloat(s.incline)||0;const mins=parseFloat(s.minutes)||0;const met=Math.max(2.5,2.0+spd*0.5+inc*0.9);return t+met*bodyKg*(mins/60);},0));
+        const entered = Math.round(doneSets.reduce((t,s)=>t+(parseFloat(s.kcal)||0),0));
+        return entered > 0 ? entered : (ex.calories ? Math.round(ex.calories) : 0);
       }
       const met = MET_BY_MUSCLE[ex.muscle] || 4.5;
       const timeHrs = (doneSets.length * 2.5) / 60;
@@ -4087,7 +4060,7 @@ function redoSession() {
     calories: ex.type === 'Cardio' ? undefined : undefined,
     sets: ex.sets.filter(x=>x.done).map(x => {
       if (ex.type === 'Cardio') {
-        return { speed: x.speed||'', incline: x.incline||'', minutes: x.minutes||'', done: false };
+        return { minutes: x.minutes||'', kcal: x.kcal||'', done: false };
       }
       return { reps: x.reps||'', kg: x.kg||'', done: false };
     })
@@ -4913,7 +4886,7 @@ function startFromProgramme(progId, dayIdx) {
         if (ex.isBike) {
           const s=doneSets[0]; sets=[{km:s.km||'',hours:s.hours||'',mins:s.mins||'',done:false}];
         } else if (ex.type==='Cardio') {
-          sets = doneSets.map(s=>({speed:s.speed||'',incline:s.incline||'',minutes:s.minutes||'',done:false}));
+          sets = doneSets.map(s=>({minutes:s.minutes||'',kcal:s.kcal||'',done:false}));
         } else {
           sets = doneSets.map(s=>({reps:s.reps||'',kg:s.kg||'',done:false}));
         }
@@ -4940,7 +4913,7 @@ function startFromProgramme(progId, dayIdx) {
 function buildDefaultSets(ex, de) {
   const nbSets = de.sets || 3;
   if (ex.isBike) return [{km:'',hours:'',mins:'',done:false}];
-  if (ex.type==='Cardio') return Array(nbSets).fill(null).map(()=>({speed:'',incline:'',minutes:'',done:false}));
+  if (ex.type==='Cardio') return Array(nbSets).fill(null).map(()=>({minutes:'',kcal:'',done:false}));
   return Array(nbSets).fill(null).map(()=>({reps:de.reps||'',kg:de.kg||'',done:false}));
 }
 
@@ -5395,7 +5368,7 @@ function launchRepertoireSession(idx) {
       const done = (hist.sets||[]).filter(s=>s.done);
       if (done.length > 0) {
         if (ex.isBike) { const s2=done[0];sets=[{km:s2.km||'',hours:s2.hours||'',mins:s2.mins||'',done:false}]; }
-        else if (ex.type==='Cardio') sets=done.map(s2=>({speed:s2.speed||'',incline:s2.incline||'',minutes:s2.minutes||'',done:false}));
+        else if (ex.type==='Cardio') sets=done.map(s2=>({minutes:s2.minutes||'',kcal:s2.kcal||'',done:false}));
         else sets=done.map(s2=>({reps:s2.reps||'',kg:s2.kg||'',done:false}));
       } else sets=buildDefaultSets(ex,de);
     } else sets=buildDefaultSets(ex,de);
@@ -5425,7 +5398,7 @@ function editRepertoireSession(idx) {
       const ex = exercises.find(ex=>ex.id===e.id)||e;
       const nbSets = e.sets || 3;
       const initSet = ex.isBike ? {km:'',hours:'',mins:'',done:false}
-        : ex.type==='Cardio' ? {speed:'',incline:'',minutes:'',done:false}
+        : ex.type==='Cardio' ? {minutes:'',kcal:'',done:false}
         : {reps:e.reps||'', kg:e.kg||'', done:false};
       return {...ex, expanded:true, startTime:null, elapsedSecs:0, finished:false,
         sets: Array(nbSets).fill(null).map(()=>({...initSet}))};
